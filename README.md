@@ -213,7 +213,7 @@ HairBook/
 │   │   ├── Venegas_Francisco_1.2_APT122_DiarioReflexionFase1.docx
 │   │   ├── Venegas_Francisco_1.3_APT122_AutoevaluacionFase1.docx
 │   │   │
-│   │   ├── Vergara_Ignacio_1.1_APT122_AutoevaluacionCompetenciasFase1.docx
+│   │   ├── Vergara_Ignacio_1.1_APT122_AutoevaluacionCompetenciasFase1.pdf
 │   │   ├── Vergara_Ignacio_1.2_APT122_DiarioReflexionFase1.docx
 │   │   ├── Vergara_Ignacio_1.3_APT122_AutoevaluacionFase1.docx
 │   │   │
