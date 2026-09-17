@@ -224,7 +224,7 @@ HairBook/
 │   └── Evidencias-Grupales/
 │       ├── Presentacion_Idea_Proyecto_HairBook.pptx
 │       ├── 1.4_APT122_FormativaFase1.docx
-│       └── 1.5_GuiaEstudiante_Fase1_Definicion_Proyecto_APT_Espanol.docx
+│       └── 1.5_GuiaEstudiante_Fase1_Definicion_Proyecto_APT_Espanol.pdf
 │
 ├── docs/
 │   ├── 01-requerimientos/
