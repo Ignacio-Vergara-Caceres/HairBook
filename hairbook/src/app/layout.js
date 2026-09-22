@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Hair Book | Reserva tu hora",
+  title: "HairBook | Reserva tu hora",
   description: "Plataforma de gestión y reserva de servicios de peluquería.",
 };
 

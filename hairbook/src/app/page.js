@@ -39,8 +39,7 @@ function Logo({ compact = false }) {
     >
       <span className="brand-mark">HB</span>
       <span className="brand-copy">
-        <strong>Hair Book</strong>
-        {!compact && <small>Tu cabello, tu momento</small>}
+        <strong>HairBook</strong>
       </span>
     </button>
   );
@@ -285,10 +284,9 @@ export default function Home() {
             <div className="container hero-grid">
               <div className="hero-copy">
                 <span className="eyebrow">Belleza personalizada, agenda simple</span>
-                <h1>Tu próxima cita comienza aquí.</h1>
+                <h1>Agenda tu próxima cita</h1>
                 <p>
-                  Descubre servicios pensados para ti, solicita tu horario en pocos pasos
-                  y recibe la confirmación de la profesional.
+                  Descubre todos nuestros servicios, agenda tu hora y recibe mi confirmación
                 </p>
                 <div className="hero-actions">
                   <button className="button button-primary" onClick={abrirServicios}>
@@ -313,9 +311,9 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="hero-visual" aria-label="Presentación de Hair Book">
+              <div className="hero-visual" aria-label="Presentación de HairBook">
                 <div className="visual-card visual-main">
-                  <span className="visual-label">Hair Book</span>
+                  <span className="visual-label">HairBook</span>
                   <div className="hair-lines" aria-hidden="true">
                     <span />
                     <span />
@@ -344,7 +342,7 @@ export default function Home() {
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">Servicios destacados</span>
-                  <h2>Encuentra lo que tu cabello necesita</h2>
+                  <h2>Selecciona el servicio que necesitas</h2>
                 </div>
                 <button className="text-arrow" onClick={abrirServicios}>Ver todos <span>→</span></button>
               </div>
@@ -363,7 +361,7 @@ export default function Home() {
                         <div className="service-meta"><span>{servicio.duracionMin} min aprox.</span><span>Desde {formatoPrecio(servicio.precioDesde)}</span></div>
                         <h3>{servicio.nombre}</h3>
                         <p>{servicio.descripcion}</p>
-                        <button className="service-link" onClick={() => elegirServicio(servicio)}>Solicitar hora <span>→</span></button>
+                        <button className="service-link" onClick={() => elegirServicio(servicio)}>Seleccionar <span>→</span></button>
                       </div>
                     </article>
                   )
@@ -372,23 +370,6 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="how-section">
-            <div className="container how-grid">
-              <div>
-                <span className="eyebrow eyebrow-light">Una agenda hecha para ti</span>
-                <h2>Menos mensajes. Más claridad.</h2>
-                <p>
-                  Hair Book centraliza la solicitud de horas para que puedas revisar servicios,
-                  elegir una fecha y saber siempre en qué estado está tu reserva.
-                </p>
-              </div>
-              <div className="how-list">
-                <div><b>01</b><span><strong>Explora</strong><small>Revisa servicios y valores referenciales.</small></span></div>
-                <div><b>02</b><span><strong>Solicita</strong><small>Elige fecha, hora y agrega una nota si la necesitas.</small></span></div>
-                <div><b>03</b><span><strong>Confirma</strong><small>La administradora revisa tu solicitud y define el valor final.</small></span></div>
-              </div>
-            </div>
-          </section>
         </>
       )}
 
@@ -445,12 +426,12 @@ export default function Home() {
 
       {pantalla === "auth" && (
         <section className="auth-section">
-          <div className="auth-decoration" aria-hidden="true"><span>HAIR</span><span>BOOK</span></div>
+          <div className="auth-decoration" aria-hidden="true"><span>HAIRBOOK</span></div>
           <div className="auth-card">
             <button className="back-link" onClick={() => navegar(servicioSeleccionado ? "servicios" : "inicio")}>← Volver</button>
             <Logo />
             <div className="auth-copy">
-              <h1>{modoAuth === "login" ? "Qué bueno verte de nuevo" : "Crea tu cuenta"}</h1>
+              <h1>{modoAuth === "login" ? "Bienvenido" : "Crea tu cuenta"}</h1>
               <p>
                 {modoAuth === "login"
                   ? "Ingresa para continuar con tu reserva y revisar tus solicitudes."
@@ -689,7 +670,7 @@ export default function Home() {
         <div className="container footer-inner">
           <Logo compact />
           <p>Proyecto Capstone · Ingeniería en Informática · Duoc UC</p>
-          <span>Hair Book 2026</span>
+          <span>HairBook 2026</span>
         </div>
       </footer>
     </main>
