@@ -18,18 +18,6 @@ function fechaMinima() {
   return local.toISOString().slice(0, 10);
 }
 
-const horarios = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
-
 function Logo({ compact = false }) {
   return (
     <button
@@ -71,6 +59,8 @@ export default function Home() {
     contrasena: "",
   });
   const [reserva, setReserva] = useState({ fecha: "", hora: "", notas: "" });
+  const [horariosDisponibles, setHorariosDisponibles] = useState([]);
+  const [cargandoHorarios, setCargandoHorarios] = useState(false);
   const [mensajeAuth, setMensajeAuth] = useState("");
   const [mensajeReserva, setMensajeReserva] = useState("");
   const [enviandoAuth, setEnviandoAuth] = useState(false);
@@ -100,6 +90,53 @@ export default function Home() {
     iniciar();
   }, []);
 
+  useEffect(() => {
+    if (!reserva.fecha) {
+      setHorariosDisponibles([]);
+      return;
+    }
+
+    const cargarDisponibilidad = async () => {
+      setCargandoHorarios(true);
+      setMensajeReserva("");
+
+      try {
+        const response = await fetch(
+          `/api/disponibilidad?fecha=${encodeURIComponent(reserva.fecha)}`,
+          { cache: "no-store" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setHorariosDisponibles([]);
+          setMensajeReserva(
+            data.mensaje || "No fue posible consultar los horarios disponibles."
+          );
+          return;
+        }
+
+        const disponibles = data.horariosDisponibles || [];
+        setHorariosDisponibles(disponibles);
+
+        setReserva((actual) => ({
+          ...actual,
+          hora: disponibles.includes(actual.hora) ? actual.hora : "",
+        }));
+      } catch (error) {
+        console.error("Error consultando disponibilidad:", error);
+        setHorariosDisponibles([]);
+        setMensajeReserva(
+          "No fue posible consultar los horarios disponibles."
+        );
+      } finally {
+        setCargandoHorarios(false);
+      }
+    };
+
+    cargarDisponibilidad();
+  }, [reserva.fecha]);
+
   const categorias = useMemo(() => {
     return ["Todos", ...new Set(servicios.map((servicio) => servicio.categoria))];
   }, [servicios]);
@@ -117,6 +154,10 @@ export default function Home() {
   };
 
   const abrirServicios = () => navegar("servicios");
+
+  const abrirImagenDisponibilidad = () => {
+    window.location.href = "/disponibilidad-instagram-semanal";
+  };
 
   const elegirServicio = (servicio) => {
     setServicioSeleccionado(servicio);
@@ -291,6 +332,9 @@ export default function Home() {
                 <div className="hero-actions">
                   <button className="button button-primary" onClick={abrirServicios}>
                     Ver servicios
+                  </button>
+                  <button className="button button-ghost" onClick={abrirImagenDisponibilidad}>
+                    Imagen semanal (temporal)
                   </button>
                   {!usuario && (
                     <button
@@ -544,19 +588,46 @@ export default function Home() {
                       type="date"
                       min={fechaMinima()}
                       value={reserva.fecha}
-                      onChange={(e) => setReserva({ ...reserva, fecha: e.target.value })}
+                      onChange={(e) =>
+                        setReserva({
+                          ...reserva,
+                          fecha: e.target.value,
+                          hora: "",
+                        })
+                      }
                       required
                     />
                   </label>
+
                   <label className="field">
-                    <span>Hora preferente</span>
+                    <span>Hora disponible</span>
                     <select
                       value={reserva.hora}
-                      onChange={(e) => setReserva({ ...reserva, hora: e.target.value })}
+                      onChange={(e) =>
+                        setReserva({
+                          ...reserva,
+                          hora: e.target.value,
+                        })
+                      }
+                      disabled={!reserva.fecha || cargandoHorarios}
                       required
                     >
-                      <option value="">Seleccionar</option>
-                      {horarios.map((hora) => <option key={hora} value={hora}>{hora}</option>)}
+                      {!reserva.fecha ? (
+                        <option value="">Selecciona una fecha</option>
+                      ) : cargandoHorarios ? (
+                        <option value="">Consultando horarios...</option>
+                      ) : horariosDisponibles.length === 0 ? (
+                        <option value="">No hay horarios disponibles</option>
+                      ) : (
+                        <>
+                          <option value="">Seleccionar</option>
+                          {horariosDisponibles.map((hora) => (
+                            <option key={hora} value={hora}>
+                              {hora}
+                            </option>
+                          ))}
+                        </>
+                      )}
                     </select>
                   </label>
                 </div>

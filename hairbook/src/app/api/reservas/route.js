@@ -31,7 +31,13 @@ export async function POST(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("capstone_peluqueria");
+    const dbName = process.env.MONGODB_DB;
+
+    if (!dbName) {
+      throw new Error("Falta MONGODB_DB en el archivo .env.local");
+    }
+
+    const db = client.db(dbName);
     const servicio = await db.collection("servicios").findOne({
       _id: new ObjectId(servicioId),
       activo: { $ne: false },
@@ -41,6 +47,27 @@ export async function POST(request) {
       return Response.json(
         { ok: false, mensaje: "El servicio seleccionado ya no está disponible." },
         { status: 404 }
+      );
+    }
+
+    const reservasMismoHorario = await db
+      .collection("reservas")
+      .find({ fecha, hora })
+      .project({ estado: 1 })
+      .toArray();
+
+    const horarioOcupado = reservasMismoHorario.some((reservaExistente) => {
+      const estado = String(reservaExistente.estado || "")
+        .toLowerCase()
+        .trim();
+
+      return !["cancelada", "rechazada"].includes(estado);
+    });
+
+    if (horarioOcupado) {
+      return Response.json(
+        { ok: false, mensaje: "Este horario ya no se encuentra disponible." },
+        { status: 409 }
       );
     }
 
@@ -97,7 +124,13 @@ export async function GET() {
     }
 
     const client = await clientPromise;
-    const db = client.db("capstone_peluqueria");
+    const dbName = process.env.MONGODB_DB;
+
+    if (!dbName) {
+      throw new Error("Falta MONGODB_DB en el archivo .env.local");
+    }
+
+    const db = client.db(dbName);
     const reservas = await db
       .collection("reservas")
       .find({ clienteId: new ObjectId(usuario.id) })
