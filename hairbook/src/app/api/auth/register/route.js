@@ -31,10 +31,10 @@ export async function POST(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("capstone_peluqueria");
-    const clientes = db.collection("clientes");
+    const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
+    const usuarios = db.collection("usuarios");
 
-    const existente = await clientes.findOne({ rut });
+    const existente = await usuarios.findOne({ rut });
     if (existente) {
       return Response.json(
         { ok: false, mensaje: "Ya existe una cuenta asociada a ese RUT." },
@@ -48,14 +48,14 @@ export async function POST(request) {
       rut,
       telefono,
       correo,
-      rol: "cliente",
+      roles: ["cliente"],
       passwordSalt: salt,
       passwordHash: hash,
       activo: true,
       fechaCreacion: new Date(),
     };
 
-    const resultado = await clientes.insertOne(documento);
+    const resultado = await usuarios.insertOne(documento);
     const usuario = { ...documento, _id: resultado.insertedId };
     const token = crearTokenSesion(usuario);
 
@@ -69,13 +69,13 @@ export async function POST(request) {
           id: resultado.insertedId.toString(),
           nombre,
           rut,
-          rol: "cliente",
+          roles: ["cliente"],
         },
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error registrando cliente:", error);
+    console.error("Error registrando usuario:", error);
     return Response.json(
       { ok: false, mensaje: "No fue posible crear la cuenta." },
       { status: 500 }

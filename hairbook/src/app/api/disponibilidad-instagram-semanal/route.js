@@ -1,4 +1,5 @@
 import clientPromise from "@/lib/mongodb";
+import { obtenerUsuarioAdmin } from "@/lib/session";
 
 const HORARIOS = [
   "09:00",
@@ -47,6 +48,15 @@ function crearRangoFechas(inicio, fin) {
 
 export async function GET(request) {
   try {
+    const usuario = await obtenerUsuarioAdmin();
+
+    if (!usuario) {
+      return Response.json(
+        { ok: false, mensaje: "No tienes permisos para consultar esta información." },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const fechaInicioParam = searchParams.get("fechaInicio");
     const fechaFinParam = searchParams.get("fechaFin");

@@ -30,12 +30,31 @@ function getSessionSecret() {
   return secret;
 }
 
+export function obtenerRolesUsuario(usuario = {}) {
+  const roles = Array.isArray(usuario.roles)
+    ? usuario.roles
+    : usuario.rol
+      ? [usuario.rol]
+      : ["cliente"];
+
+  const normalizados = roles
+    .filter((rol) => typeof rol === "string")
+    .map((rol) => rol.trim().toLowerCase())
+    .filter(Boolean);
+
+  return [...new Set(normalizados.length ? normalizados : ["cliente"])];
+}
+
+export function usuarioTieneRol(usuario, rol) {
+  return obtenerRolesUsuario(usuario).includes(String(rol).toLowerCase());
+}
+
 export function crearTokenSesion(usuario) {
   const payload = {
     id: usuario._id.toString(),
     rut: usuario.rut,
     nombre: usuario.nombre,
-    rol: usuario.rol || "cliente",
+    roles: obtenerRolesUsuario(usuario),
     exp: Math.floor(Date.now() / 1000) + SESSION_DURATION_SECONDS,
   };
 

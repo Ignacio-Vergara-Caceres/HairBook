@@ -1,0 +1,271 @@
+.shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 82% 6%, rgba(234, 215, 211, 0.75), transparent 27%),
+    linear-gradient(180deg, #fffdf9 0%, #faf5ef 100%);
+  color: #241b1d;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid rgba(230, 222, 216, 0.85);
+  background: rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.topbarInner {
+  width: min(1180px, calc(100% - 40px));
+  min-height: 78px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brandMark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #5e2635;
+  border-radius: 50%;
+  color: #5e2635;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.brand > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.brand strong {
+  font-family: Georgia, serif;
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.brand small {
+  color: #73676a;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.siteLink,
+.logoutButton {
+  min-height: 40px;
+  padding: 0 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.siteLink {
+  border: 1px solid #e6ded8;
+  background: white;
+  color: #241b1d;
+}
+
+.logoutButton {
+  border: 0;
+  background: #5e2635;
+  color: white;
+  cursor: pointer;
+}
+
+.content {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 82px 0 100px;
+}
+
+.heading {
+  max-width: 720px;
+  margin-bottom: 46px;
+}
+
+.eyebrow {
+  color: #b9797e;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.heading h1 {
+  margin: 13px 0 16px;
+  font-family: Georgia, serif;
+  font-size: clamp(44px, 6vw, 68px);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -2.5px;
+}
+
+.heading p {
+  max-width: 620px;
+  margin: 0;
+  color: #73676a;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.cardActive,
+.cardDisabled {
+  min-height: 285px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid #e6ded8;
+  border-radius: 24px;
+  text-decoration: none;
+}
+
+.cardActive {
+  background: linear-gradient(145deg, #6e3040, #421925);
+  color: white;
+  box-shadow: 0 24px 60px rgba(66, 25, 37, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cardActive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 70px rgba(66, 25, 37, 0.24);
+}
+
+.cardDisabled {
+  background: rgba(255, 255, 255, 0.72);
+  color: #241b1d;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cardNumber {
+  font-family: Georgia, serif;
+  font-size: 38px;
+  opacity: 0.4;
+}
+
+.statusActive,
+.statusSoon {
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+}
+
+.statusActive {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5dcd7;
+}
+
+.statusSoon {
+  background: #f7f1e9;
+  color: #73676a;
+}
+
+.cardActive h2,
+.cardDisabled h2 {
+  margin: 0 0 10px;
+  font-family: Georgia, serif;
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.cardActive p,
+.cardDisabled p {
+  max-width: 500px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.cardActive p {
+  color: #e3cbca;
+}
+
+.cardDisabled p {
+  color: #73676a;
+}
+
+.cardAction {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cardDisabled .cardAction {
+  color: #9a8f90;
+}
+
+@media (max-width: 760px) {
+  .topbarInner,
+  .content {
+    width: min(100% - 28px, 1180px);
+  }
+
+  .topbarInner {
+    min-height: 70px;
+  }
+
+  .brand small {
+    display: none;
+  }
+
+  .siteLink {
+    display: none;
+  }
+
+  .content {
+    padding: 56px 0 72px;
+  }
+
+  .heading h1 {
+    font-size: 46px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardActive,
+  .cardDisabled {
+    min-height: 245px;
+  }
+}

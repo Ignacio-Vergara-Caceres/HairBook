@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 
 const coleccionesPermitidas = [
   "negocios",
-  "clientes",
+  "usuarios",
   "profesionales",
 ];
 

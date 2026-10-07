@@ -1,0 +1,272 @@
+.contenedor {
+  min-height: 100vh;
+  background: #f7f2ef;
+  padding: 32px 20px 48px;
+}
+
+.panel {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.encabezado {
+  margin-bottom: 24px;
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 34px;
+}
+
+.controles {
+  display: grid;
+  grid-template-columns: 280px 280px 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.campo,
+.resumen {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campo span,
+.resumen span {
+  font-size: 14px;
+  color: #6f6a66;
+}
+
+.campo input {
+  border: 1px solid #ddd6d1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.resumen strong {
+  font-size: 20px;
+}
+
+.resumen small {
+  color: #6f6a66;
+}
+
+.acciones {
+  margin-bottom: 18px;
+}
+
+.botonDescarga {
+  border: none;
+  border-radius: 12px;
+  background: #1f1a17;
+  color: #fff;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botonDescarga:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #ffe9e9;
+  color: #8d2b2b;
+}
+
+.previewWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.previewInstagram {
+  width: 100%;
+  max-width: 1080px;
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(180deg, #fff8f4 0%, #f3e5dd 100%);
+  border-radius: 36px;
+  padding: 34px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.marca {
+  display: inline-block;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.previewHeader h2 {
+  margin: 0;
+  font-size: 42px;
+  line-height: 1.05;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #1f1a17;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.subtitulo {
+  margin: 14px 0 22px;
+  color: #645f5c;
+  font-size: 17px;
+}
+
+.estado {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.66);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.gridSemana {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.diaCard {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(76, 63, 55, 0.08);
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.diaHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.diaHeader strong {
+  font-size: 18px;
+}
+
+.diaHeader span {
+  font-size: 13px;
+  color: #6f6a66;
+}
+
+.horasListas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.horasListas p {
+  margin: 0;
+}
+
+.sinHoras {
+  margin: auto 0;
+  font-size: 15px;
+  color: #8a4a4a;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .controles {
+    grid-template-columns: 1fr;
+  }
+
+  .previewInstagram {
+    aspect-ratio: auto;
+    min-height: 900px;
+  }
+}
+
+@media (max-width: 640px) {
+  .contenedor {
+    padding-inline: 14px;
+  }
+
+  .previewInstagram {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .previewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .previewHeader h2 {
+    font-size: 32px;
+  }
+
+  .subtitulo {
+    font-size: 15px;
+  }
+
+  .gridSemana {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+.volverAdmin {
+  display: inline-flex;
+  margin-bottom: 14px;
+  color: #73676a;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.volverAdmin:hover {
+  color: #5e2635;
+}

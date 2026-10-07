@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import {
   crearTokenSesion,
   normalizarRut,
+  obtenerRolesUsuario,
   sessionCookieOptions,
   verificarContrasena,
 } from "@/lib/auth";
@@ -21,8 +22,8 @@ export async function POST(request) {
     }
 
     const client = await clientPromise;
-    const db = client.db("capstone_peluqueria");
-    const usuario = await db.collection("clientes").findOne({ rut, activo: { $ne: false } });
+    const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
+    const usuario = await db.collection("usuarios").findOne({ rut, activo: { $ne: false } });
 
     if (
       !usuario?.passwordHash ||
@@ -45,7 +46,7 @@ export async function POST(request) {
         id: usuario._id.toString(),
         nombre: usuario.nombre,
         rut: usuario.rut,
-        rol: usuario.rol || "cliente",
+        roles: obtenerRolesUsuario(usuario),
       },
     });
   } catch (error) {

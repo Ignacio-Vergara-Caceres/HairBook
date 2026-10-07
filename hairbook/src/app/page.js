@@ -18,6 +18,16 @@ function fechaMinima() {
   return local.toISOString().slice(0, 10);
 }
 
+function usuarioEsAdmin(usuario) {
+  const roles = Array.isArray(usuario?.roles)
+    ? usuario.roles
+    : usuario?.rol
+      ? [usuario.rol]
+      : [];
+
+  return roles.includes("admin");
+}
+
 function Logo({ compact = false }) {
   return (
     <button
@@ -155,8 +165,8 @@ export default function Home() {
 
   const abrirServicios = () => navegar("servicios");
 
-  const abrirImagenDisponibilidad = () => {
-    window.location.href = "/disponibilidad-instagram-semanal";
+  const abrirAdmin = () => {
+    window.location.href = "/admin";
   };
 
   const elegirServicio = (servicio) => {
@@ -197,6 +207,11 @@ export default function Home() {
       setUsuario(result.usuario);
       setLogin({ rut: "", contrasena: "" });
       setRegistro({ nombre: "", rut: "", telefono: "", correo: "", contrasena: "" });
+
+      if (usuarioEsAdmin(result.usuario)) {
+        window.location.href = "/admin";
+        return;
+      }
 
       if (servicioSeleccionado) {
         navegar("checkout");
@@ -297,14 +312,21 @@ export default function Home() {
           <nav className="desktop-nav" aria-label="Navegación principal">
             <button onClick={volverInicio}>Inicio</button>
             <button onClick={abrirServicios}>Servicios</button>
-            {usuario && <button onClick={verReservas}>Mis reservas</button>}
+            {usuarioEsAdmin(usuario) ? (
+              <button onClick={abrirAdmin}>Panel admin</button>
+            ) : (
+              usuario && <button onClick={verReservas}>Mis reservas</button>
+            )}
           </nav>
           <div className="nav-actions">
             {cargandoSesion ? (
               <span className="session-loading"><Spinner /></span>
             ) : usuario ? (
               <>
-                <button className="user-pill" onClick={verReservas}>
+                <button
+                  className="user-pill"
+                  onClick={usuarioEsAdmin(usuario) ? abrirAdmin : verReservas}
+                >
                   <span className="avatar">{usuario.nombre?.charAt(0)?.toUpperCase() || "C"}</span>
                   <span>{usuario.nombre?.split(" ")[0]}</span>
                 </button>
@@ -332,9 +354,6 @@ export default function Home() {
                 <div className="hero-actions">
                   <button className="button button-primary" onClick={abrirServicios}>
                     Ver servicios
-                  </button>
-                  <button className="button button-ghost" onClick={abrirImagenDisponibilidad}>
-                    Imagen semanal (temporal)
                   </button>
                   {!usuario && (
                     <button
