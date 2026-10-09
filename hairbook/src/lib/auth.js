@@ -25,7 +25,7 @@ export function verificarContrasena(contrasena, salt, hashGuardado) {
 function getSessionSecret() {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
-    throw new Error("Falta SESSION_SECRET en .env.local");
+    throw new Error("Falta SESSION_SECRET en las variables de entorno");
   }
   return secret;
 }

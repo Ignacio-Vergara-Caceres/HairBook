@@ -3,7 +3,7 @@ import { MongoClient } from "mongodb";
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  throw new Error("Falta MONGODB_URI en el archivo .env.local");
+  throw new Error("Falta MONGODB_URI en las variables de entorno");
 }
 
 const client = new MongoClient(uri);

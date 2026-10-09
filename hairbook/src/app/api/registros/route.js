@@ -1,12 +1,15 @@
 import { MongoClient } from "mongodb";
+import { obtenerUsuarioAdmin } from "@/lib/session";
 
-const coleccionesPermitidas = [
-  "negocios",
-  "usuarios",
-  "profesionales",
-];
+// Esta API es legado del prototipo; la colección usuarios se administra
+// únicamente desde los endpoints de autenticación.
+const coleccionesPermitidas = ["negocios", "profesionales"];
 
 export async function POST(request) {
+  if (!(await obtenerUsuarioAdmin())) {
+    return Response.json({ ok: false, mensaje: "Acceso no autorizado." }, { status: 403 });
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
@@ -57,7 +60,7 @@ export async function POST(request) {
 
     await client.connect();
 
-    const db = client.db("capstone_peluqueria");
+    const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
 
     const documento = {
       ...datos,
@@ -86,7 +89,6 @@ export async function POST(request) {
       {
         ok: false,
         mensaje: "Error guardando el registro",
-        error: error.message,
       },
       {
         status: 500,
@@ -98,6 +100,10 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
+  if (!(await obtenerUsuarioAdmin())) {
+    return Response.json({ ok: false, mensaje: "Acceso no autorizado." }, { status: 403 });
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
@@ -133,7 +139,7 @@ export async function GET(request) {
 
     await client.connect();
 
-    const db = client.db("capstone_peluqueria");
+    const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
 
     const registros = await db
       .collection(tipo)
@@ -157,7 +163,6 @@ export async function GET(request) {
       {
         ok: false,
         mensaje: "Error obteniendo registros",
-        error: error.message,
       },
       {
         status: 500,

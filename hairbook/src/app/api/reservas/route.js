@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioSesion } from "@/lib/session";
+import { fechaHoraChileAUtc } from "@/lib/fechaChile";
 
 export async function POST(request) {
   try {
@@ -22,8 +23,8 @@ export async function POST(request) {
       );
     }
 
-    const fechaHora = new Date(`${fecha}T${hora}:00`);
-    if (Number.isNaN(fechaHora.getTime()) || fechaHora.getTime() < Date.now()) {
+    const fechaHora = fechaHoraChileAUtc(fecha, hora);
+    if (!fechaHora || fechaHora.getTime() <= Date.now()) {
       return Response.json(
         { ok: false, mensaje: "Selecciona una fecha y hora futura." },
         { status: 400 }

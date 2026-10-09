@@ -1,5 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioAdmin } from "@/lib/session";
+import { fechaISOValida } from "@/lib/fechaChile";
 
 const HORARIOS = [
   "09:00",
@@ -23,24 +24,14 @@ const DIAS = [
   "Sábado",
 ];
 
-function formatearFechaISO(fecha) {
-  const year = fecha.getFullYear();
-  const month = String(fecha.getMonth() + 1).padStart(2, "0");
-  const day = String(fecha.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 function crearRangoFechas(inicio, fin) {
   const fechas = [];
-  const actual = new Date(inicio);
-  actual.setHours(0, 0, 0, 0);
-
-  const limite = new Date(fin);
-  limite.setHours(0, 0, 0, 0);
+  const actual = new Date(`${inicio}T12:00:00Z`);
+  const limite = new Date(`${fin}T12:00:00Z`);
 
   while (actual <= limite) {
-    fechas.push(formatearFechaISO(actual));
-    actual.setDate(actual.getDate() + 1);
+    fechas.push(actual.toISOString().slice(0, 10));
+    actual.setUTCDate(actual.getUTCDate() + 1);
   }
 
   return fechas;
@@ -68,24 +59,24 @@ export async function GET(request) {
       );
     }
 
-    const fechaInicio = new Date(`${fechaInicioParam}T00:00:00`);
-    const fechaFin = new Date(`${fechaFinParam}T00:00:00`);
-
-    if (Number.isNaN(fechaInicio.getTime()) || Number.isNaN(fechaFin.getTime())) {
+    if (!fechaISOValida(fechaInicioParam) || !fechaISOValida(fechaFinParam)) {
       return Response.json(
         { ok: false, mensaje: "Las fechas indicadas no son válidas." },
         { status: 400 }
       );
     }
 
-    if (fechaFin < fechaInicio) {
+    if (fechaFinParam < fechaInicioParam) {
       return Response.json(
         { ok: false, mensaje: "La fecha de fin no puede ser anterior a la fecha de inicio." },
         { status: 400 }
       );
     }
 
-    const diferenciaDias = Math.floor((fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24));
+    const diferenciaDias = Math.round(
+      (Date.parse(`${fechaFinParam}T12:00:00Z`) - Date.parse(`${fechaInicioParam}T12:00:00Z`)) /
+        86400000
+    );
     if (diferenciaDias > 6) {
       return Response.json(
         { ok: false, mensaje: "El rango máximo permitido es de una semana." },
@@ -98,7 +89,7 @@ export async function GET(request) {
       throw new Error("Falta MONGODB_DB en el archivo .env.local");
     }
 
-    const fechasRango = crearRangoFechas(fechaInicio, fechaFin);
+    const fechasRango = crearRangoFechas(fechaInicioParam, fechaFinParam);
 
     const client = await clientPromise;
     const db = client.db(dbName);
@@ -115,7 +106,7 @@ export async function GET(request) {
     });
 
     const rango = fechasRango.map((fechaISO) => {
-      const fechaActual = new Date(`${fechaISO}T00:00:00`);
+      const fechaActual = new Date(`${fechaISO}T12:00:00Z`);
       const horasOcupadas = [
         ...new Set(
           reservasActivas
@@ -131,7 +122,7 @@ export async function GET(request) {
 
       return {
         fecha: fechaISO,
-        dia: DIAS[fechaActual.getDay()],
+        dia: DIAS[fechaActual.getUTCDay()],
         horariosDisponibles,
         horasOcupadas,
         totalDisponibles: horariosDisponibles.length,

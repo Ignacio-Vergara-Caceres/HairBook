@@ -1,6 +1,11 @@
 import { MongoClient } from "mongodb";
+import { obtenerUsuarioAdmin } from "@/lib/session";
 
 export async function GET() {
+  if (!(await obtenerUsuarioAdmin())) {
+    return Response.json({ ok: false, mensaje: "Acceso no autorizado." }, { status: 403 });
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
@@ -33,7 +38,6 @@ export async function GET() {
       {
         ok: false,
         mensaje: "No se pudo conectar a MongoDB",
-        error: error.message,
       },
       {
         status: 500,

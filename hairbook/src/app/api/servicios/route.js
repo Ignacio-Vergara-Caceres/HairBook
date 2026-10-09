@@ -66,7 +66,7 @@ const serviciosDemo = [
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("capstone_peluqueria");
+    const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
     const collection = db.collection("servicios");
 
     const cantidad = await collection.countDocuments({ activo: { $ne: false } });

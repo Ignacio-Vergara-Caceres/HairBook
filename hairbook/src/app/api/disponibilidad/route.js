@@ -1,4 +1,5 @@
 import clientPromise from "@/lib/mongodb";
+import { fechaISOValida } from "@/lib/fechaChile";
 
 const HORARIOS = [
   "09:00",
@@ -17,7 +18,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const fecha = searchParams.get("fecha");
 
-    if (!fecha) {
+    if (!fechaISOValida(fecha)) {
       return Response.json(
         { ok: false, mensaje: "Debe indicar una fecha." },
         { status: 400 }
