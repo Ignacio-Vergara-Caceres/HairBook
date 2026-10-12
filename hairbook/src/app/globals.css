@@ -297,3 +297,27 @@ button:disabled { cursor: not-allowed; opacity: 0.7; }
   .mobile-logout { display: inline-block; }
   .footer-inner { min-height: 130px; flex-direction: column; justify-content: center; text-align: center; }
 }
+
+/* Estados de las reservas */
+
+.reservation-item .status.pending {
+  color: #a66b00;
+  background-color: #fff3d6;
+}
+
+.reservation-item .status.confirmed {
+  color: #287a47;
+  background-color: #e5f4e9;
+}
+
+.reservation-item .status.rejected {
+  color: #a32e39;
+  background-color: #fce8eb;
+}
+
+.reservation-item .status {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}

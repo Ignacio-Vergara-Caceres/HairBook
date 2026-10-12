@@ -17,7 +17,8 @@ const modulos = [
     descripcion:
       "Revisa solicitudes, confirma horas y administra el estado de las reservas.",
     numero: "02",
-    activo: false,
+    href: "/admin/reservas",
+    activo: true,
   },
   {
     titulo: "Clientas",

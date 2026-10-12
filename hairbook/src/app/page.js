@@ -745,7 +745,26 @@ export default function Home() {
                       <h3>{item.servicio}</h3>
                       <p>{item.hora} hrs · Desde {formatoPrecio(item.precioReferencial)}</p>
                     </div>
-                    <span className={`status ${item.estado === "pendiente" ? "pending" : ""}`}>{item.estado}</span>
+                    <span
+                      className={`status ${item.estado === "pendiente"
+                          ? "pending"
+                          : item.estado === "confirmada"
+                            ? "confirmed"
+                            : item.estado === "rechazada"
+                              ? "rejected"
+                              : ""
+                        }`}
+                    >
+                      {item.estado === "pendiente"
+                        ? "Pendiente de confirmación"
+                        : item.estado === "confirmada"
+                          ? "Reserva confirmada"
+                          : item.estado === "rechazada"
+                            ? "Reserva rechazada"
+                            : item.estado === "cancelada"
+                              ? "Reserva cancelada"
+                              : item.estado || "Estado desconocido"}
+                    </span>
                   </article>
                 ))}
               </div>
