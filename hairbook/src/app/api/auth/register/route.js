@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
+import { normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
 import {
   crearHashContrasena,
   crearTokenSesion,
@@ -16,9 +17,16 @@ export async function POST(request) {
     const correo = body.correo?.trim().toLowerCase() || "";
     const contrasena = body.contrasena || "";
 
-    if (!nombre || !rut || !contrasena) {
+    if (!nombre || !rut || !telefono || !contrasena) {
       return Response.json(
-        { ok: false, mensaje: "Nombre, RUT y contraseña son obligatorios." },
+        { ok: false, mensaje: "Nombre, RUT, teléfono y contraseña son obligatorios." },
+        { status: 400 }
+      );
+    }
+
+    if (!normalizarTelefonoWhatsapp(telefono)) {
+      return Response.json(
+        { ok: false, mensaje: "Ingresa un celular chileno válido (ej.: +56 9 1234 5678)." },
         { status: 400 }
       );
     }

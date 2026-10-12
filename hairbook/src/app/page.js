@@ -75,6 +75,7 @@ export default function Home() {
   const [mensajeReserva, setMensajeReserva] = useState("");
   const [enviandoAuth, setEnviandoAuth] = useState(false);
   const [enviandoReserva, setEnviandoReserva] = useState(false);
+  const [aceptaWhatsapp, setAceptaWhatsapp] = useState(false);
 
   useEffect(() => {
     const iniciar = async () => {
@@ -172,6 +173,7 @@ export default function Home() {
   const elegirServicio = (servicio) => {
     setServicioSeleccionado(servicio);
     setReserva({ fecha: "", hora: "", notas: "" });
+    setAceptaWhatsapp(false);
     setMensajeReserva("");
 
     if (!usuario) {
@@ -251,6 +253,7 @@ export default function Home() {
         body: JSON.stringify({
           servicioId: servicioSeleccionado._id,
           ...reserva,
+          aceptaWhatsapp,
         }),
       });
       const result = await response.json();
@@ -527,7 +530,8 @@ export default function Home() {
                         type="tel"
                         value={registro.telefono}
                         onChange={(e) => setRegistro({ ...registro, telefono: e.target.value })}
-                        placeholder="+56 9..."
+                        placeholder="+56 9 1234 5678"
+                        required
                       />
                     </label>
                     <label className="field">
@@ -662,6 +666,15 @@ export default function Home() {
                   />
                 </label>
 
+                <label className="whatsapp-consent">
+                  <input
+                    type="checkbox"
+                    checked={aceptaWhatsapp}
+                    onChange={(e) => setAceptaWhatsapp(e.target.checked)}
+                  />
+                  <span>Autorizo a HairBook a enviarme por WhatsApp una notificación sobre esta solicitud de reserva al número de celular de mi cuenta. Es opcional y no incluye publicidad.</span>
+                </label>
+
                 {mensajeReserva && <p className="form-message error">{mensajeReserva}</p>}
 
                 <button className="button button-primary full" type="submit" disabled={enviandoReserva}>
@@ -697,6 +710,15 @@ export default function Home() {
             <span className="eyebrow">Solicitud enviada</span>
             <h1>¡Tu hora está en revisión!</h1>
             <p>Recibimos tu solicitud correctamente. La administradora debe revisar disponibilidad y confirmar el valor final.</p>
+            {reservaConfirmada.whatsappEstado === "aceptado" && (
+              <p>Se solicitó el envío de una notificación a tu WhatsApp. Su entrega puede tardar.</p>
+            )}
+            {reservaConfirmada.whatsappEstado === "error" && (
+              <p>No pudimos procesar el WhatsApp, pero tu reserva sí quedó registrada.</p>
+            )}
+            {reservaConfirmada.whatsappEstado === "sin_telefono_valido" && (
+              <p>Tu reserva quedó registrada, pero el teléfono de tu cuenta no permite enviar WhatsApp.</p>
+            )}
 
             <div className="success-summary">
               <div><span>Servicio</span><strong>{reservaConfirmada.servicio}</strong></div>

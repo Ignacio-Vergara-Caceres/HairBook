@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioSesion } from "@/lib/session";
 import { fechaHoraChileAUtc } from "@/lib/fechaChile";
+import { enviarWhatsappReservaRecibida } from "@/lib/whatsapp";
 
 export async function POST(request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { servicioId, fecha, hora, notas = "" } = body;
+    const { servicioId, fecha, hora, notas = "", aceptaWhatsapp = false } = body;
 
     if (!servicioId || !fecha || !hora || !ObjectId.isValid(servicioId)) {
       return Response.json(
@@ -72,6 +73,20 @@ export async function POST(request) {
       );
     }
 
+    // Se obtiene el celular del usuario autenticado desde MongoDB, jamás del request.
+    const cliente = await db.collection("usuarios").findOne(
+      { _id: new ObjectId(usuario.id), activo: { $ne: false } },
+      { projection: { telefono: 1 } }
+    );
+
+    if (!cliente) {
+      return Response.json(
+        { ok: false, mensaje: "Tu cuenta no está disponible." },
+        { status: 401 }
+      );
+    }
+
+    const consentimientoWhatsapp = aceptaWhatsapp === true;
     const documento = {
       clienteId: new ObjectId(usuario.id),
       clienteNombre: usuario.nombre,
@@ -87,9 +102,39 @@ export async function POST(request) {
       estado: "pendiente",
       estadoPago: "pendiente",
       fechaCreacion: new Date(),
+      whatsapp: {
+        consentimiento: consentimientoWhatsapp,
+        fechaConsentimiento: consentimientoWhatsapp ? new Date() : null,
+        estado: consentimientoWhatsapp ? "pendiente_envio" : "sin_consentimiento",
+      },
     };
 
     const resultado = await db.collection("reservas").insertOne(documento);
+
+    // Una reserva guardada correctamente NO debe fallar porque WhatsApp no responda.
+    // Se intenta el envío una sola vez después de la inserción (no desde el cliente).
+    if (consentimientoWhatsapp) {
+      let whatsapp;
+      try {
+        whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono);
+      } catch (error) {
+        console.error("No se pudo solicitar notificación de WhatsApp:", error);
+        whatsapp = { estado: "error" };
+      }
+
+      documento.whatsapp.estado = whatsapp.estado;
+      documento.whatsapp.fechaIntento = new Date();
+      if (whatsapp.mensajeId) documento.whatsapp.mensajeId = whatsapp.mensajeId;
+
+      try {
+        await db.collection("reservas").updateOne(
+          { _id: resultado.insertedId },
+          { $set: { whatsapp: documento.whatsapp } }
+        );
+      } catch (error) {
+        console.error("No se pudo guardar el estado de WhatsApp:", error);
+      }
+    }
 
     return Response.json(
       {
@@ -100,6 +145,7 @@ export async function POST(request) {
           fecha,
           hora,
           estado: "pendiente",
+          whatsappEstado: documento.whatsapp.estado,
           precioReferencial: servicio.precioDesde || null,
         },
       },
