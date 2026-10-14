@@ -15,35 +15,7 @@ export function normalizarTelefonoWhatsapp(telefono) {
   return null;
 }
 
-/**
- * Cuatro parámetros, en el mismo orden de la plantilla en WhatsApp Manager:
- * {{1}} fecha, {{2}} hora, {{3}} servicio, {{4}} valor referencial.
- * Se obtienen de los datos validados/guardados en MongoDB; no del navegador.
- */
-export function parametrosPlantillaReserva({ fecha, hora, servicioNombre, precioReferencial }) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) ||
-      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora) ||
-      typeof servicioNombre !== "string" || !servicioNombre.trim()) {
-    throw new Error("Datos incompletos para la plantilla de reserva de WhatsApp");
-  }
-
-  const fechaLegible = fecha.split("-").reverse().join("/");
-  const precio = Number(precioReferencial);
-  const precioLegible = precioReferencial != null && Number.isFinite(precio) && precio > 0
-    ? `Desde ${new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-      }).format(precio)}`
-    : "Por confirmar";
-
-  return [fechaLegible, hora, servicioNombre.trim(), precioLegible].map((texto) => ({
-    type: "text",
-    text: texto,
-  }));
-}
-
-export async function enviarWhatsappReservaRecibida(telefono, datosReserva) {
+export async function enviarWhatsappReservaRecibida(telefono) {
   const numero = normalizarTelefonoWhatsapp(telefono);
   if (!numero) return { estado: "sin_telefono_valido" };
 
@@ -65,9 +37,8 @@ export async function enviarWhatsappReservaRecibida(telefono, datosReserva) {
     throw new Error("Configuración incorrecta de WhatsApp Graph API");
   }
 
-  // La plantilla debe estar aprobada y tener cuatro variables en su cuerpo.
-  // El precio es referencial y NO se indica que la cita esté confirmada.
-  const parametros = parametrosPlantillaReserva(datosReserva);
+  // Debe existir en WhatsApp Manager una plantilla aprobada con ese nombre,
+  // idioma y SIN variables. El mensaje debe decir que la reserva sigue pendiente.
   const response = await fetch(
     `https://graph.facebook.com/${version}/${phoneNumberId}/messages`,
     {
@@ -84,9 +55,6 @@ export async function enviarWhatsappReservaRecibida(telefono, datosReserva) {
         template: {
           name: plantilla,
           language: { code: idioma },
-          components: [
-            { type: "body", parameters: parametros },
-          ],
         },
       }),
       signal: AbortSignal.timeout(8000),
