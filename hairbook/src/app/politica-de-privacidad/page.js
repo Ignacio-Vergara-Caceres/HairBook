@@ -94,7 +94,7 @@ export default function PoliticaDePrivacidad() {
             <h2>Datos que utilizamos</h2>
             <p>Según cómo utilices HairBook, podemos tratar las siguientes categorías:</p>
             <ul>
-              <li><strong>Cuenta:</strong> nombre, RUT, teléfono celular, correo electrónico opcional y datos necesarios para validar el acceso. La contraseña se almacena mediante un hash con sal, no como texto legible.</li>
+              <li><strong>Cuenta:</strong> nombre, RUT, teléfono celular, correo electrónico opcional y datos necesarios para validar el acceso. La contraseña se almacena mediante un "salted hash", no como texto legible.</li>
               <li><strong>Reservas:</strong> servicio solicitado, fecha, hora, notas ingresadas por ti, precio referencial, estado de la solicitud e historial de cambios.</li>
               <li><strong>WhatsApp:</strong> número telefónico, nombre de perfil cuando Meta lo proporciona, contenido de mensajes recibidos y enviados, referencias a tipos de archivos compartidos y estados de entrega.</li>
               <li><strong>Funcionamiento técnico:</strong> cookies de sesión y registros técnicos necesarios para mantener el servicio y diagnosticar errores.</li>
