@@ -1,0 +1,60 @@
+.pagina { min-height:100vh; padding:36px clamp(16px,3.5vw,58px) 48px; color:#2a2023; background:#faf6f1; }
+.encabezado { max-width:1560px; margin:0 auto 25px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; }
+.encabezado h1 { margin:15px 0 8px; font-family:Georgia,serif; font-size:clamp(30px,4vw,46px); font-weight:500; }
+.encabezado p { margin:0; color:#76676a; }
+.volver { font-size:13px; color:#71384a; font-weight:700; text-decoration:none; }
+.estadoConexion { display:inline-block; flex-shrink:0; border:1px solid #e1d8d3; border-radius:100px; background:white; color:#5e2635; font-size:12px; font-weight:700; padding:10px 15px; }
+.panel { max-width:1560px; margin:0 auto; display:grid; grid-template-columns:minmax(220px, 275px) minmax(290px,1fr) minmax(230px,295px); height:min(76vh,780px); min-height:520px; background:white; border:1px solid #eadfd8; border-radius:20px; overflow:hidden; box-shadow:0 20px 50px rgba(67,37,40,.07); }
+.barraLateral,.reservas { min-width:0; overflow-y:auto; background:#fffdfb; }
+.barraLateral { border-right:1px solid #eee4df; }
+.reservas { border-left:1px solid #eee4df; padding:20px 14px; }
+.tituloSeccion { padding:20px 15px 12px; font-weight:800; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+.reservas .tituloSeccion { padding:0 0 16px; }
+.tituloSeccion span { color:#9f8c8c; }
+.buscar { width:calc(100% - 28px); margin:0 14px 13px; border:1px solid #e5d9d4; border-radius:10px; padding:11px 12px; font:inherit; font-size:13px; background:white; }
+.contactos { display:flex; flex-direction:column; }
+.contacto { appearance:none; display:flex; align-items:center; gap:10px; border:0; border-bottom:1px solid #f4ece7; background:transparent; padding:13px 12px; width:100%; text-align:left; cursor:pointer; color:inherit; }
+.contactoActivo { background:#f8efec; border-left:3px solid #723548; padding-left:9px; }
+.contacto:hover { background:#f9f3f0; }
+.avatar { width:37px; height:37px; flex-shrink:0; display:grid; place-items:center; border-radius:50%; background:#ecdddb; color:#682e40; font-weight:800; }
+.contactoTexto { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.contactoTexto strong { font-size:13px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.contactoTexto small { font-size:12px; color:#7b6a6c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.punto { background:#2d9b72; width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.chat { display:flex; flex-direction:column; min-width:0; min-height:0; background:#fbf7f4; }
+.cabeceraChat { padding:18px; background:white; border-bottom:1px solid #f0e5df; display:flex; gap:8px; align-items:center; justify-content:space-between; }
+.cabeceraChat > div { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.cabeceraChat strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cabeceraChat small { color:#7b6c6e; }
+.estadoAbierto,.estadoCerrado { font-size:11px; font-weight:700; border-radius:99px; padding:7px 9px; text-align:center; }
+.estadoAbierto { background:#e4f4ed; color:#216547; }
+.estadoCerrado { background:#fff1e4; color:#9b5a2c; }
+.mensajes { flex:1; overflow-y:auto; min-height:0; padding:20px; display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+.burbuja { border-radius:15px; padding:11px 13px; line-height:1.5; font-size:14px; max-width:85%; overflow-wrap:anywhere; }
+.burbuja small { display:block; font-size:10px; opacity:.7; margin-top:7px; text-align:right; }
+.entrante { background:white; border:1px solid #efe3dc; border-bottom-left-radius:4px; }
+.saliente { align-self:flex-end; background:#e5efe8; border-bottom-right-radius:4px; }
+.sinSeleccion { display:grid; place-items:center; flex:1; color:#88777a; text-align:center; padding:20px; }
+.enviar { padding:15px; background:white; border-top:1px solid #efe3dc; }
+.filaEnviar { display:flex; gap:9px; }
+.filaEnviar input { flex:1; min-width:0; border:1px solid #e2d6d0; border-radius:11px; padding:13px; font:inherit; }
+.filaEnviar button,.edicion button { border:0; color:white; background:#623044; border-radius:10px; padding:12px 17px; font-weight:700; cursor:pointer; }
+.filaEnviar button:disabled,.edicion button:disabled,.acciones button:disabled { opacity:.5; cursor:not-allowed; }
+.cuidado { color:#92603c; font-size:12px; line-height:1.5; margin:0 0 10px; }
+.vacio { color:#87777a; font-size:13px; padding:12px; line-height:1.6; }
+.tarjetaReserva { padding:15px 12px; background:white; border:1px solid #f0e4de; border-radius:13px; margin-bottom:12px; }
+.reservaTitulo { display:flex; flex-direction:column; gap:8px; }
+.reservaTitulo strong { font-size:14px; }
+.etiqueta { width:max-content; background:#f5eae5; color:#723a49; font-size:11px; font-weight:700; padding:5px 8px; border-radius:20px; text-transform:capitalize; }
+.tarjetaReserva p { color:#7b686b; margin:8px 0; font-size:12px; }
+.acciones { display:flex; flex-wrap:wrap; gap:7px; margin-top:13px; }
+.acciones button { font-size:11px; border:0; border-radius:8px; color:white; padding:8px 10px; cursor:pointer; font-weight:700; }
+.aceptar { background:#247752; }.rechazar { background:#aa4050; }.modificar { background:#6b5163; }
+.edicion { margin-top:15px; display:flex; flex-direction:column; gap:9px; }
+.edicion label { font-size:12px; font-weight:700; display:flex; flex-direction:column; gap:5px; }
+.edicion input,.edicion select { width:100%; padding:8px; border:1px solid #eadfd8; border-radius:7px; background:white; color:#241b1d; }
+.error,.aviso { max-width:1560px; margin:10px auto; padding:12px 15px; border-radius:10px; font-size:13px; }
+.error { background:#fff0f0; color:#a52136; }.aviso { background:#eef5ef; color:#21583f; }
+.nota { max-width:1560px; margin:14px auto; color:#87777a; font-size:12px; }
+@media(max-width:1080px) { .panel { grid-template-columns:220px minmax(240px,1fr); height:auto; min-height:620px; }.chat { min-height:570px; }.reservas { grid-column:1/-1; border-left:0; border-top:1px solid #eee4df; }.reservas { display:block; }.tarjetaReserva { display:inline-block; width:min(100%,300px); vertical-align:top; margin-right:12px; } }
+@media(max-width:650px) { .pagina { padding:20px 12px; }.encabezado { align-items:flex-start; flex-direction:column; }.panel { display:flex; flex-direction:column; height:auto; }.barraLateral { max-height:220px; border-right:0; border-bottom:1px solid #eee4df; }.chat { min-height:480px; height:540px; }.contactos { flex-direction:row; overflow:auto; }.contacto { min-width:215px; border-right:1px solid #f0e5df; }.reservas { padding:15px; }.tarjetaReserva { display:block; width:100%; }.cabeceraChat { padding:12px; }.mensajes { padding:12px; }.burbuja { max-width:93%; } }

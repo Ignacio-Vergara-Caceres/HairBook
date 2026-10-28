@@ -105,3 +105,36 @@ export async function enviarWhatsappReservaRecibida(telefono, datosReserva) {
   // 'aceptado' NO significa entregado: la confirmación de entrega requiere webhook.
   return { estado: "aceptado", mensajeId };
 }
+
+/** Mensajes libres: solo se permiten dentro de las 24h siguientes al último mensaje del cliente. */
+export async function enviarWhatsappTexto(telefono, texto) {
+  const numero = normalizarTelefonoWhatsapp(telefono);
+  if (!numero) throw new Error("Número de WhatsApp no válido");
+  if (typeof texto !== "string" || !texto.trim() || texto.length > 2500) {
+    throw new Error("El mensaje debe contener entre 1 y 2500 caracteres");
+  }
+  if (process.env.WHATSAPP_ENVIO_ACTIVO !== "true") {
+    throw new Error("El envío de WhatsApp está desactivado");
+  }
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const version = process.env.WHATSAPP_GRAPH_API_VERSION;
+  if (!token || !/^\d+$/.test(phoneNumberId || "") || !/^v\d+\.\d+$/.test(version || "")) {
+    throw new Error("Falta configurar la integración de WhatsApp");
+  }
+  const response = await fetch(`https://graph.facebook.com/${version}/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messaging_product: "whatsapp", recipient_type: "individual", to: numero,
+      type: "text", text: { preview_url: false, body: texto.trim() },
+    }),
+    cache: "no-store", signal: AbortSignal.timeout(8000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`WhatsApp no aceptó el mensaje (HTTP ${response.status}, código ${data?.error?.code ?? "N/D"})`);
+  }
+  if (!data?.messages?.[0]?.id) throw new Error("Meta no devolvió el identificador del mensaje");
+  return { metaId: data.messages[0].id };
+}
