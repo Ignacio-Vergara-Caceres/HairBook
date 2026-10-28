@@ -586,7 +586,10 @@ export default function Home() {
                 {enviandoAuth ? <><Spinner /> Procesando...</> : modoAuth === "login" ? "Ingresar" : "Crear cuenta y continuar"}
               </button>
             </form>
-            <p className="privacy-note">Tus datos se utilizarán únicamente para gestionar tu cuenta y tus reservas.</p>
+            <p className="privacy-note">
+              Tus datos se utilizan para gestionar tu cuenta, reservas y comunicaciones relacionadas.
+              {" "}<a href="/politica-de-privacidad" style={{ color: "var(--wine)", textDecoration: "underline" }}>Lee la política de privacidad</a>.
+            </p>
           </div>
         </section>
       )}
@@ -672,7 +675,7 @@ export default function Home() {
                     checked={aceptaWhatsapp}
                     onChange={(e) => setAceptaWhatsapp(e.target.checked)}
                   />
-                  <span>Autorizo a HairBook a enviarme por WhatsApp una notificación sobre esta solicitud de reserva al número de celular de mi cuenta. Es opcional y no incluye publicidad.</span>
+                  <span>Autorizo a HairBook a enviarme por WhatsApp una notificación sobre esta solicitud de reserva al número de celular de mi cuenta. Es opcional y no incluye publicidad. {" "}<a href="/politica-de-privacidad" target="_blank" rel="noopener noreferrer" style={{ color: "var(--wine)", textDecoration: "underline" }}>Política de privacidad</a>.</span>
                 </label>
 
                 {mensajeReserva && <p className="form-message error">{mensajeReserva}</p>}
@@ -801,6 +804,7 @@ export default function Home() {
         <div className="container footer-inner">
           <Logo compact />
           <p>Proyecto Capstone · Ingeniería en Informática · Duoc UC</p>
+          <a href="/politica-de-privacidad" style={{ color: "#e4cdca", textDecoration: "underline", fontSize: 12 }}>Política de privacidad</a>
           <span>HairBook 2026</span>
         </div>
       </footer>
