@@ -1,6 +1,8 @@
 
+import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioAdmin } from "@/lib/session";
+import { normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
 
 export async function GET() {
   try {
@@ -32,6 +34,12 @@ export async function GET() {
       .limit(100)
       .toArray();
 
+    const idsClientes = [...new Set(reservas.map((r) => r.clienteId?.toString()).filter(Boolean))];
+    const usuarios = await db.collection("usuarios").find({
+      _id: { $in: idsClientes.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id)) },
+    }, { projection: { telefono: 1 } }).toArray();
+    const telefonos = new Map(usuarios.map((u) => [u._id.toString(), normalizarTelefonoWhatsapp(u.telefono)]));
+
     // 4. Preparar los datos para la interfaz
     const datos = reservas.map((reserva) => ({
       id: reserva._id.toString(),
@@ -41,6 +49,7 @@ export async function GET() {
       hora: reserva.hora,
       estado: reserva.estado || "pendiente",
       notas: reserva.notas || "",
+      telefono: reserva.whatsapp?.consentimiento ? (reserva.whatsapp.numero || telefonos.get(reserva.clienteId?.toString()) || null) : null,
     }));
 
     return Response.json({ ok: true, datos });

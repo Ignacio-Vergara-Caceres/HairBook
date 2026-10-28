@@ -117,7 +117,7 @@ export default function AdminReservasPage() {
         )
       );
 
-      setMensaje(resultado.mensaje);
+      setMensaje(`${resultado.mensaje} ${resultado.aviso || ""}`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -245,6 +245,7 @@ export default function AdminReservasPage() {
                     </td>
 
                     <td style={{ padding: "12px" }}>
+                      {reserva.telefono && <Link href={`/admin/whatsapp?telefono=${encodeURIComponent(reserva.telefono)}`} style={{display: "inline-block", marginBottom: "8px", color: "#5e2635", fontWeight: 700}}>Abrir chat</Link>}
                       {pendiente && futura ? (
                         <div
                           style={{

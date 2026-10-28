@@ -1,17 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { fechaISOValida } from "@/lib/fechaChile";
 
-const HORARIOS = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
+import { HORARIOS } from "@/lib/horarios";
 
 export async function GET(request) {
   try {

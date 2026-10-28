@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioSesion } from "@/lib/session";
 import { fechaHoraChileAUtc } from "@/lib/fechaChile";
-import { enviarWhatsappReservaRecibida } from "@/lib/whatsapp";
+import { enviarWhatsappReservaRecibida, normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
+import { registrarConversacion, registrarMensajeSaliente } from "@/lib/whatsappInbox";
 
 export async function POST(request) {
   try {
@@ -104,6 +105,7 @@ export async function POST(request) {
       fechaCreacion: new Date(),
       whatsapp: {
         consentimiento: consentimientoWhatsapp,
+        numero: consentimientoWhatsapp ? normalizarTelefonoWhatsapp(cliente.telefono) : null,
         fechaConsentimiento: consentimientoWhatsapp ? new Date() : null,
         estado: consentimientoWhatsapp ? "pendiente_envio" : "sin_consentimiento",
       },
@@ -114,6 +116,14 @@ export async function POST(request) {
     // Una reserva guardada correctamente NO debe fallar porque WhatsApp no responda.
     // Se intenta el envío una sola vez después de la inserción (no desde el cliente).
     if (consentimientoWhatsapp) {
+      // Mostrar también solicitudes pendientes en la bandeja, aunque Meta esté desactivado.
+      try {
+        await registrarConversacion(db, cliente.telefono, {
+          nombre: usuario.nombre, clienteId: new ObjectId(usuario.id),
+        });
+      } catch (error) {
+        console.error("No se pudo crear la conversación asociada a reserva:", error);
+      }
       let whatsapp;
       try {
         whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono, {
@@ -130,6 +140,18 @@ export async function POST(request) {
       documento.whatsapp.estado = whatsapp.estado;
       documento.whatsapp.fechaIntento = new Date();
       if (whatsapp.mensajeId) documento.whatsapp.mensajeId = whatsapp.mensajeId;
+      if (whatsapp.mensajeId) {
+        try {
+          await registrarMensajeSaliente(db, {
+            telefono: cliente.telefono, nombre: usuario.nombre,
+            clienteId: new ObjectId(usuario.id), metaId: whatsapp.mensajeId,
+            tipo: "template",
+            texto: `Plantilla ${process.env.WHATSAPP_TEMPLATE_NAME || "de reserva"}: ${documento.servicioNombre} · ${documento.fecha} ${documento.hora}`,
+          });
+        } catch (error) {
+          console.error("No se pudo registrar notificación en historial de WhatsApp:", error);
+        }
+      }
 
       try {
         await db.collection("reservas").updateOne(

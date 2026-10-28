@@ -21,17 +21,24 @@ const modulos = [
     activo: true,
   },
   {
+    titulo: "WhatsApp",
+    descripcion: "Responde mensajes y administra reservas desde una misma conversación.",
+    numero: "03",
+    href: "/admin/whatsapp",
+    activo: true,
+  },
+  {
     titulo: "Clientas",
     descripcion:
       "Accede a las fichas de clientas y a su historial de atención.",
-    numero: "03",
+    numero: "04",
     activo: false,
   },
   {
     titulo: "Servicios",
     descripcion:
       "Administra el catálogo, precios referenciales y duración de los servicios.",
-    numero: "04",
+    numero: "05",
     activo: false,
   },
 ];
