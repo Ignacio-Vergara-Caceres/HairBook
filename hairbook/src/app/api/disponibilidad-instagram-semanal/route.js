@@ -1,18 +1,9 @@
+import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioAdmin } from "@/lib/session";
 import { fechaISOValida } from "@/lib/fechaChile";
-
-const HORARIOS = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-];
+import { HORARIOS } from "@/lib/horarios";
+import { horariosParaProfesional } from "@/lib/profesionales";
 
 const DIAS = [
   "Domingo",
@@ -94,39 +85,31 @@ export async function GET(request) {
     const client = await clientPromise;
     const db = client.db(dbName);
 
-    const reservas = await db
-      .collection("reservas")
-      .find({ fecha: { $in: fechasRango } })
-      .project({ fecha: 1, hora: 1, estado: 1 })
-      .toArray();
-
-    const reservasActivas = reservas.filter((reserva) => {
-      const estado = String(reserva.estado || "").toLowerCase().trim();
-      return !["cancelada", "rechazada"].includes(estado);
-    });
-
-    const rango = fechasRango.map((fechaISO) => {
-      const fechaActual = new Date(`${fechaISO}T12:00:00Z`);
-      const horasOcupadas = [
-        ...new Set(
-          reservasActivas
-            .filter((reserva) => reserva.fecha === fechaISO)
-            .map((reserva) => reserva.hora)
-            .filter(Boolean)
-        ),
-      ];
-
-      const horariosDisponibles = HORARIOS.filter(
-        (hora) => !horasOcupadas.includes(hora)
-      );
-
-      return {
-        fecha: fechaISO,
-        dia: DIAS[fechaActual.getUTCDay()],
-        horariosDisponibles,
-        horasOcupadas,
-        totalDisponibles: horariosDisponibles.length,
-      };
+    const profesionales = await db.collection("usuarios").find({
+      activo: { $ne: false }, $or: [{ roles: "profesional" }, { rol: "profesional" }],
+    }, { projection: { nombre: 1, serviciosIds: 1, bloqueos: 1, activo: 1 } }).toArray();
+    const todosIds = [...new Set(profesionales.flatMap(p => p.serviciosIds || []))];
+    const servicios = todosIds.length ? await db.collection("servicios")
+      .find({ _id: { $in: todosIds.map(id => { try { return new ObjectId(id); } catch { return null; } }).filter(Boolean) }, activo: { $ne: false } })
+      .toArray() : [];
+    const porId = new Map(servicios.map(s => [String(s._id), s]));
+    const disponiblesPorFecha = await Promise.all(fechasRango.map(async fecha => {
+      const listas = await Promise.all(profesionales.map(async pro => {
+        // La imagen general muestra una hora cuando al menos un profesional tiene
+        // espacio para alguno de sus servicios. El más corto permite más cupos.
+        const menor = (pro.serviciosIds || []).map(id => porId.get(String(id))).filter(Boolean)
+          .sort((a,b) => (a.duracionMin || 60) - (b.duracionMin || 60))[0];
+        if (!menor) return [];
+        return horariosParaProfesional(db, { profesional: pro, servicio: menor, fecha });
+      }));
+      return { fecha, disponibles: [...new Set(listas.flat())] };
+    }));
+    const rango = disponiblesPorFecha.map(({ fecha, disponibles }) => {
+      const fechaActual = new Date(`${fecha}T12:00:00Z`);
+      const horariosDisponibles = HORARIOS.filter(h => disponibles.includes(h));
+      return { fecha, dia: DIAS[fechaActual.getUTCDay()], horariosDisponibles,
+        horasOcupadas: HORARIOS.filter(h => !disponibles.includes(h)),
+        totalDisponibles: horariosDisponibles.length };
     });
 
     return Response.json({

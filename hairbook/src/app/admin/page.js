@@ -28,17 +28,24 @@ const modulos = [
     activo: true,
   },
   {
+    titulo: "Profesionales",
+    descripcion: "Crea cuentas profesionales, asigna servicios y administra sus accesos.",
+    numero: "04",
+    href: "/admin/profesionales",
+    activo: true,
+  },
+  {
     titulo: "Clientas",
     descripcion:
       "Accede a las fichas de clientas y a su historial de atención.",
-    numero: "04",
+    numero: "05",
     activo: false,
   },
   {
     titulo: "Servicios",
     descripcion:
       "Administra el catálogo, precios referenciales y duración de los servicios.",
-    numero: "05",
+    numero: "06",
     activo: false,
   },
 ];

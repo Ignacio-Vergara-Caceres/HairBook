@@ -12,10 +12,7 @@ function formatoPrecio(valor) {
 }
 
 function fechaMinima() {
-  const hoy = new Date();
-  const offset = hoy.getTimezoneOffset();
-  const local = new Date(hoy.getTime() - offset * 60 * 1000);
-  return local.toISOString().slice(0, 10);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
 function usuarioEsAdmin(usuario) {
@@ -26,6 +23,10 @@ function usuarioEsAdmin(usuario) {
       : [];
 
   return roles.includes("admin");
+}
+
+function usuarioEsProfesional(usuario) {
+  return Array.isArray(usuario?.roles) && usuario.roles.includes("profesional");
 }
 
 function Logo({ compact = false }) {
@@ -68,7 +69,9 @@ export default function Home() {
     correo: "",
     contrasena: "",
   });
-  const [reserva, setReserva] = useState({ fecha: "", hora: "", notas: "" });
+  const [reserva, setReserva] = useState({ profesionalId: "", fecha: "", hora: "", notas: "" });
+  const [profesionales, setProfesionales] = useState([]);
+  const [cargandoProfesionales, setCargandoProfesionales] = useState(false);
   const [horariosDisponibles, setHorariosDisponibles] = useState([]);
   const [cargandoHorarios, setCargandoHorarios] = useState(false);
   const [mensajeAuth, setMensajeAuth] = useState("");
@@ -102,22 +105,36 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!reserva.fecha) {
+    if (!servicioSeleccionado?._id) { setProfesionales([]); return; }
+    let cancelado = false;
+    setCargandoProfesionales(true);
+    fetch(`/api/profesionales?servicioId=${encodeURIComponent(servicioSeleccionado._id)}`, { cache: "no-store" })
+      .then(async (r) => { const d = await r.json(); if (!r.ok || !d.ok) throw Error(d.mensaje); return d; })
+      .then((d) => { if (!cancelado) setProfesionales(d.datos || []); })
+      .catch(() => { if (!cancelado) { setProfesionales([]); setMensajeReserva("No fue posible cargar profesionales."); } })
+      .finally(() => { if (!cancelado) setCargandoProfesionales(false); });
+    return () => { cancelado = true; };
+  }, [servicioSeleccionado?._id]);
+
+  useEffect(() => {
+    if (!reserva.fecha || !reserva.profesionalId || !servicioSeleccionado?._id) {
       setHorariosDisponibles([]);
       return;
     }
 
+    let cancelado = false;
     const cargarDisponibilidad = async () => {
       setCargandoHorarios(true);
       setMensajeReserva("");
 
       try {
         const response = await fetch(
-          `/api/disponibilidad?fecha=${encodeURIComponent(reserva.fecha)}`,
+          `/api/disponibilidad?fecha=${encodeURIComponent(reserva.fecha)}&profesionalId=${encodeURIComponent(reserva.profesionalId)}&servicioId=${encodeURIComponent(servicioSeleccionado._id)}`,
           { cache: "no-store" }
         );
 
         const data = await response.json();
+        if (cancelado) return;
 
         if (!response.ok) {
           setHorariosDisponibles([]);
@@ -135,18 +152,20 @@ export default function Home() {
           hora: disponibles.includes(actual.hora) ? actual.hora : "",
         }));
       } catch (error) {
+        if (cancelado) return;
         console.error("Error consultando disponibilidad:", error);
         setHorariosDisponibles([]);
         setMensajeReserva(
           "No fue posible consultar los horarios disponibles."
         );
       } finally {
-        setCargandoHorarios(false);
+        if (!cancelado) setCargandoHorarios(false);
       }
     };
 
     cargarDisponibilidad();
-  }, [reserva.fecha]);
+    return () => { cancelado = true; };
+  }, [reserva.fecha, reserva.profesionalId, servicioSeleccionado?._id]);
 
   const categorias = useMemo(() => {
     return ["Todos", ...new Set(servicios.map((servicio) => servicio.categoria))];
@@ -166,13 +185,12 @@ export default function Home() {
 
   const abrirServicios = () => navegar("servicios");
 
-  const abrirAdmin = () => {
-    window.location.href = "/admin";
-  };
+  const abrirAdmin = () => { window.location.href = "/admin"; };
+  const abrirProfesional = () => { window.location.href = "/profesional"; };
 
   const elegirServicio = (servicio) => {
     setServicioSeleccionado(servicio);
-    setReserva({ fecha: "", hora: "", notas: "" });
+    setReserva({ profesionalId: "", fecha: "", hora: "", notas: "" });
     setAceptaWhatsapp(false);
     setMensajeReserva("");
 
@@ -210,10 +228,8 @@ export default function Home() {
       setLogin({ rut: "", contrasena: "" });
       setRegistro({ nombre: "", rut: "", telefono: "", correo: "", contrasena: "" });
 
-      if (usuarioEsAdmin(result.usuario)) {
-        window.location.href = "/admin";
-        return;
-      }
+      if (usuarioEsAdmin(result.usuario)) { window.location.href = "/admin"; return; }
+      if (usuarioEsProfesional(result.usuario)) { window.location.href = "/profesional"; return; }
 
       if (servicioSeleccionado) {
         navegar("checkout");
@@ -241,7 +257,7 @@ export default function Home() {
 
   const enviarReserva = async (evento) => {
     evento.preventDefault();
-    if (!servicioSeleccionado) return;
+    if (!servicioSeleccionado || !reserva.profesionalId) { setMensajeReserva("Selecciona un profesional antes de reservar."); return; }
 
     setEnviandoReserva(true);
     setMensajeReserva("");
@@ -317,6 +333,8 @@ export default function Home() {
             <button onClick={abrirServicios}>Servicios</button>
             {usuarioEsAdmin(usuario) ? (
               <button onClick={abrirAdmin}>Panel admin</button>
+            ) : usuarioEsProfesional(usuario) ? (
+              <button onClick={abrirProfesional}>Panel profesional</button>
             ) : (
               usuario && <button onClick={verReservas}>Mis reservas</button>
             )}
@@ -328,7 +346,7 @@ export default function Home() {
               <>
                 <button
                   className="user-pill"
-                  onClick={usuarioEsAdmin(usuario) ? abrirAdmin : verReservas}
+                  onClick={usuarioEsAdmin(usuario) ? abrirAdmin : usuarioEsProfesional(usuario) ? abrirProfesional : verReservas}
                 >
                   <span className="avatar">{usuario.nombre?.charAt(0)?.toUpperCase() || "C"}</span>
                   <span>{usuario.nombre?.split(" ")[0]}</span>
@@ -606,7 +624,16 @@ export default function Home() {
 
             <div className="checkout-grid">
               <form className="checkout-card" onSubmit={enviarReserva}>
-                <div className="step-heading"><span>1</span><div><strong>Elige tu horario</strong><small>Selecciona una fecha y hora preferente.</small></div></div>
+                <div className="step-heading"><span>1</span><div><strong>Elige tu profesional</strong><small>Selecciona quién realizará tu servicio.</small></div></div>
+                <label className="field" style={{ marginBottom: 25, display: "block" }}>
+                  <span>Profesional</span>
+                  <select required value={reserva.profesionalId} disabled={cargandoProfesionales} onChange={(e) => setReserva({ ...reserva, profesionalId: e.target.value, fecha: "", hora: "" })}>
+                    <option value="">{cargandoProfesionales ? "Cargando profesionales..." : "Selecciona un profesional"}</option>
+                    {profesionales.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especialidad ? ` · ${p.especialidad}` : ""}</option>)}
+                  </select>
+                  {!cargandoProfesionales && profesionales.length === 0 && <small style={{ color: "#a32e39", display: "block", marginTop: 8 }}>No hay profesionales habilitados para este servicio. Consulta con la peluquería.</small>}
+                </label>
+                <div className="step-heading second"><span>2</span><div><strong>Elige tu horario</strong><small>Verás las horas disponibles del profesional seleccionado.</small></div></div>
                 <div className="field-row">
                   <label className="field">
                     <span>Fecha</span>
@@ -635,7 +662,7 @@ export default function Home() {
                           hora: e.target.value,
                         })
                       }
-                      disabled={!reserva.fecha || cargandoHorarios}
+                      disabled={!reserva.fecha || !reserva.profesionalId || cargandoHorarios}
                       required
                     >
                       {!reserva.fecha ? (
@@ -658,7 +685,7 @@ export default function Home() {
                   </label>
                 </div>
 
-                <div className="step-heading second"><span>2</span><div><strong>Cuéntanos algo más</strong><small>Opcional: déjanos información útil para preparar tu atención.</small></div></div>
+                <div className="step-heading second"><span>3</span><div><strong>Cuéntanos algo más</strong><small>Opcional: déjanos información útil para preparar tu atención.</small></div></div>
                 <label className="field">
                   <span>Notas</span>
                   <textarea
@@ -680,7 +707,7 @@ export default function Home() {
 
                 {mensajeReserva && <p className="form-message error">{mensajeReserva}</p>}
 
-                <button className="button button-primary full" type="submit" disabled={enviandoReserva}>
+                <button className="button button-primary full" type="submit" disabled={enviandoReserva || !reserva.profesionalId || !reserva.hora}>
                   {enviandoReserva ? <><Spinner /> Enviando...</> : "Enviar solicitud de reserva"}
                 </button>
                 <p className="checkout-disclaimer">No se realizará ningún cobro en esta etapa.</p>
@@ -697,6 +724,7 @@ export default function Home() {
                 <div className="summary-lines">
                   <div><span>Duración estimada</span><strong>{servicioSeleccionado.duracionMin} min</strong></div>
                   <div><span>Valor referencial</span><strong>Desde {formatoPrecio(servicioSeleccionado.precioDesde)}</strong></div>
+                  <div><span>Profesional</span><strong>{profesionales.find(p => p.id === reserva.profesionalId)?.nombre || "Por elegir"}</strong></div>
                   <div><span>Estado inicial</span><strong className="status pending">Pendiente</strong></div>
                 </div>
                 <div className="summary-note"><b>Importante</b><span>El valor final y la disponibilidad se confirman después de revisar tu solicitud.</span></div>
@@ -712,7 +740,7 @@ export default function Home() {
             <div className="success-icon">✓</div>
             <span className="eyebrow">Solicitud enviada</span>
             <h1>¡Tu hora está en revisión!</h1>
-            <p>Recibimos tu solicitud correctamente. La administradora debe revisar disponibilidad y confirmar el valor final.</p>
+            <p>Recibimos tu solicitud. Tu profesional podrá confirmarla y coordinar cualquier cambio contigo.</p>
             {reservaConfirmada.whatsappEstado === "aceptado" && (
               <p>Se solicitó el envío de una notificación a tu WhatsApp. Su entrega puede tardar.</p>
             )}
@@ -725,6 +753,7 @@ export default function Home() {
 
             <div className="success-summary">
               <div><span>Servicio</span><strong>{reservaConfirmada.servicio}</strong></div>
+              <div><span>Profesional</span><strong>{reservaConfirmada.profesional}</strong></div>
               <div><span>Fecha solicitada</span><strong>{reservaConfirmada.fecha}</strong></div>
               <div><span>Hora</span><strong>{reservaConfirmada.hora}</strong></div>
               <div><span>Estado</span><strong className="status pending">Pendiente de aprobación</strong></div>
@@ -768,6 +797,7 @@ export default function Home() {
                     <div className="reservation-copy">
                       <span className="reservation-label">Servicio</span>
                       <h3>{item.servicio}</h3>
+                      <p>Profesional: {item.profesional || "Sin asignar"}</p>
                       <p>{item.hora} hrs · Desde {formatoPrecio(item.precioReferencial)}</p>
                     </div>
                     <span

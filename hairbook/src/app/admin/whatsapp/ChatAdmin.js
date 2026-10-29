@@ -10,7 +10,9 @@ const formatFecha = (fecha) => fecha ? new Date(fecha).toLocaleString("es-CL", {
 const fechaLegible = (fecha) => fecha ? fecha.split("-").reverse().join("/") : "";
 const normalizar = (valor) => String(valor || "").replace(/\D/g, "");
 
-export default function ChatAdmin({ telefonoInicial }) {
+export default function ChatAdmin({ telefonoInicial, rol = "admin" }) {
+  const base = `/api/${rol}`;
+  const panel = `/${rol}`;
   const [lista, setLista] = useState([]);
   const [telefono, setTelefono] = useState(normalizar(telefonoInicial));
   const [datos, setDatos] = useState(null);
@@ -28,7 +30,7 @@ export default function ChatAdmin({ telefonoInicial }) {
 
   const cargarLista = useCallback(async () => {
     try {
-      const respuesta = await fetch("/api/admin/whatsapp/conversaciones", { cache: "no-store" });
+      const respuesta = await fetch(`${base}/whatsapp/conversaciones`, { cache: "no-store" });
       const contenido = await respuesta.json();
       if (!respuesta.ok || !contenido.ok) throw new Error(contenido.mensaje || "Error cargando conversaciones");
       setLista(contenido.datos || []);
@@ -41,7 +43,7 @@ export default function ChatAdmin({ telefonoInicial }) {
   const cargarChat = useCallback(async (numero, silencioso = false) => {
     if (!numero) { setDatos(null); return; }
     try {
-      const respuesta = await fetch(`/api/admin/whatsapp/conversaciones/${encodeURIComponent(numero)}`, { cache: "no-store" });
+      const respuesta = await fetch(`${base}/whatsapp/conversaciones/${encodeURIComponent(numero)}`, { cache: "no-store" });
       const contenido = await respuesta.json();
       if (!respuesta.ok || !contenido.ok) throw new Error(contenido.mensaje || "Error cargando chat");
       setDatos(contenido);
@@ -68,7 +70,7 @@ export default function ChatAdmin({ telefonoInicial }) {
     if (!telefono || !borrador.trim() || procesando) return;
     setProcesando(true); setError(""); setAviso("");
     try {
-      const respuesta = await fetch(`/api/admin/whatsapp/conversaciones/${encodeURIComponent(telefono)}/mensajes`, {
+      const respuesta = await fetch(`${base}/whatsapp/conversaciones/${encodeURIComponent(telefono)}/mensajes`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texto: borrador.trim() }),
       });
       const contenido = await respuesta.json();
@@ -81,11 +83,11 @@ export default function ChatAdmin({ telefonoInicial }) {
 
   async function gestionarReserva(reserva, body) {
     if (procesando) return;
-    const accion = body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "confirmar" : "rechazar";
+    const accion = body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "confirmar" : body.estado === "rechazada" ? "rechazar" : body.estado === "cancelada" ? "cancelar" : "completar";
     if (!window.confirm(`¿Deseas ${accion} esta reserva?`)) return;
     setProcesando(true); setError(""); setAviso("");
     try {
-      const respuesta = await fetch(`/api/admin/reservas/${reserva.id}`, {
+      const respuesta = await fetch(`${base}/reservas/${reserva.id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
       });
       const contenido = await respuesta.json();
@@ -99,8 +101,9 @@ export default function ChatAdmin({ telefonoInicial }) {
   async function cargarDisponibilidad(fecha, reserva) {
     setDisponibles([]); setNuevaHora("");
     if (!fecha) return;
+    if (!reserva.profesionalId || !reserva.servicioId) { setError("Esta reserva antigua no tiene profesional asignado. Asígnalo antes de reprogramar."); return; }
     try {
-      const respuesta = await fetch(`/api/disponibilidad?fecha=${encodeURIComponent(fecha)}`, { cache: "no-store" });
+      const respuesta = await fetch(`/api/disponibilidad?fecha=${encodeURIComponent(fecha)}&servicioId=${encodeURIComponent(reserva.servicioId || "")}&profesionalId=${encodeURIComponent(reserva.profesionalId || "")}`, { cache: "no-store" });
       const contenido = await respuesta.json();
       if (!respuesta.ok || !contenido.ok) throw new Error(contenido.mensaje || "Sin disponibilidad");
       const opciones = contenido.horariosDisponibles || [];
@@ -119,7 +122,7 @@ export default function ChatAdmin({ telefonoInicial }) {
   return (
     <main className={styles.pagina}>
       <header className={styles.encabezado}>
-        <div><Link href="/admin" className={styles.volver}>← Volver al panel</Link>
+        <div><Link href={panel} className={styles.volver}>← Volver al panel</Link>
           <h1>Mensajes de WhatsApp</h1>
           <p>Conversaciones y reservas, todo desde HairBook.</p></div>
         <span className={styles.estadoConexion}>WhatsApp Cloud API</span>
@@ -186,6 +189,8 @@ export default function ChatAdmin({ telefonoInicial }) {
                   </>}
                   <button className={styles.modificar} disabled={procesando} onClick={() => editando === reserva.id ? setEditando("") : comenzarCambio(reserva)}>Modificar</button>
                 </div>}
+                {reserva.estado === "confirmada" && futura && <div className={styles.acciones}><button className={styles.rechazar} disabled={procesando} onClick={() => gestionarReserva(reserva, { estado: "cancelada" })}>Cancelar</button></div>}
+                {reserva.estado === "confirmada" && !futura && <div className={styles.acciones}><button className={styles.aceptar} disabled={procesando} onClick={() => gestionarReserva(reserva, { estado: "completada" })}>Marcar completada</button></div>}
                 {editando === reserva.id && <form className={styles.edicion} onSubmit={(e) => { e.preventDefault(); gestionarReserva(reserva, { accion: "modificar", fecha: nuevaFecha, hora: nuevaHora }); }}>
                   <label>Fecha<input type="date" value={nuevaFecha} onChange={(e) => { setNuevaFecha(e.target.value); cargarDisponibilidad(e.target.value, reserva); }} required /></label>
                   <label>Horario<select value={nuevaHora} onChange={(e) => setNuevaHora(e.target.value)} required><option value="">Seleccionar hora</option>{disponibles.map((h) => <option key={h} value={h}>{h}</option>)}</select></label>

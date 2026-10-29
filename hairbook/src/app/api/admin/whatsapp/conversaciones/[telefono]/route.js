@@ -38,7 +38,7 @@ export async function GET(_request, { params }) {
         fecha: m.fecha, estado: m.estadoEntrega || m.estado,
       })),
       reservas: reservas.map((r) => ({
-        id: String(r._id), servicio: r.servicioNombre, fecha: r.fecha, hora: r.hora,
+        id: String(r._id), servicio: r.servicioNombre, servicioId: String(r.servicioId || ""), profesionalId: r.profesionalId ? String(r.profesionalId) : null, fecha: r.fecha, hora: r.hora,
         estado: r.estado, precioReferencial: r.precioReferencial, notas: r.notas || "",
       })),
     });
