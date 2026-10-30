@@ -4,6 +4,7 @@ import { obtenerUsuarioSesion } from "@/lib/session";
 import { fechaHoraChileAUtc } from "@/lib/fechaChile";
 import { enviarWhatsappReservaRecibida, normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
 import { registrarConversacion, registrarMensajeSaliente } from "@/lib/whatsappInbox";
+import { horariosParaProfesional, idValido } from "@/lib/profesionales";
 
 export async function POST(request) {
   try {
@@ -15,12 +16,13 @@ export async function POST(request) {
       );
     }
 
+    if (!usuario.roles?.includes("cliente")) return Response.json({ ok: false, mensaje: "Solo las cuentas de clientes pueden reservar." }, { status: 403 });
     const body = await request.json();
-    const { servicioId, fecha, hora, notas = "", aceptaWhatsapp = false } = body;
+    const { servicioId, profesionalId, fecha, hora, notas = "", aceptaWhatsapp = false } = body;
 
-    if (!servicioId || !fecha || !hora || !ObjectId.isValid(servicioId)) {
+    if (!idValido(servicioId) || !idValido(profesionalId) || !fecha || !hora || typeof notas !== "string" || notas.length > 1500) {
       return Response.json(
-        { ok: false, mensaje: "Completa el servicio, fecha y hora." },
+        { ok: false, mensaje: "Completa servicio, profesional, fecha y hora." },
         { status: 400 }
       );
     }
@@ -53,26 +55,13 @@ export async function POST(request) {
       );
     }
 
-    const reservasMismoHorario = await db
-      .collection("reservas")
-      .find({ fecha, hora })
-      .project({ estado: 1 })
-      .toArray();
-
-    const horarioOcupado = reservasMismoHorario.some((reservaExistente) => {
-      const estado = String(reservaExistente.estado || "")
-        .toLowerCase()
-        .trim();
-
-      return !["cancelada", "rechazada"].includes(estado);
+    const profesional = await db.collection("usuarios").findOne({
+      _id: new ObjectId(profesionalId), activo: { $ne: false },
+      $or: [{ roles: "profesional" }, { rol: "profesional" }],
     });
-
-    if (horarioOcupado) {
-      return Response.json(
-        { ok: false, mensaje: "Este horario ya no se encuentra disponible." },
-        { status: 409 }
-      );
-    }
+    if (!profesional) return Response.json({ ok: false, mensaje: "Profesional no disponible." }, { status: 404 });
+    const disponibles = await horariosParaProfesional(db, { profesional, servicio, fecha });
+    if (!disponibles.includes(hora)) return Response.json({ ok: false, mensaje: "Esta hora ya no está disponible para el profesional seleccionado." }, { status: 409 });
 
     // Se obtiene el celular del usuario autenticado desde MongoDB, jamás del request.
     const cliente = await db.collection("usuarios").findOne(
@@ -92,8 +81,11 @@ export async function POST(request) {
       clienteId: new ObjectId(usuario.id),
       clienteNombre: usuario.nombre,
       clienteRut: usuario.rut,
+      profesionalId: profesional._id,
+      profesionalNombre: profesional.nombre,
       servicioId: servicio._id,
       servicioNombre: servicio.nombre,
+      duracionMin: servicio.duracionMin || 60,
       precioReferencial: servicio.precioDesde || null,
       precioFinal: null,
       fecha,
@@ -169,6 +161,7 @@ export async function POST(request) {
         reserva: {
           id: resultado.insertedId.toString(),
           servicio: servicio.nombre,
+          profesional: profesional.nombre,
           fecha,
           hora,
           estado: "pendiente",
@@ -217,6 +210,7 @@ export async function GET() {
       datos: reservas.map((reserva) => ({
         id: reserva._id.toString(),
         servicio: reserva.servicioNombre,
+        profesional: reserva.profesionalNombre || "Sin asignar",
         fecha: reserva.fecha,
         hora: reserva.hora,
         estado: reserva.estado,

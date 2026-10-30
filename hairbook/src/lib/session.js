@@ -48,3 +48,16 @@ export async function obtenerUsuarioAdmin() {
     roles: obtenerRolesUsuario(usuario),
   };
 }
+
+/** Valida el rol contra MongoDB en cada solicitud; la cookie no concede permisos por sí sola. */
+export async function obtenerUsuarioProfesional() {
+  const sesion = await obtenerUsuarioSesion();
+  if (!sesion?.id || !ObjectId.isValid(sesion.id)) return null;
+  const db = (await clientPromise).db(process.env.MONGODB_DB || "capstone_peluqueria");
+  const usuario = await db.collection("usuarios").findOne({
+    _id: new ObjectId(sesion.id), activo: { $ne: false },
+    $or: [{ roles: "profesional" }, { rol: "profesional" }],
+  });
+  if (!usuario || (usuario.authVersion || 0) !== (sesion.authVersion || 0)) return null;
+  return { id: String(usuario._id), nombre: usuario.nombre, rut: usuario.rut, roles: obtenerRolesUsuario(usuario) };
+}

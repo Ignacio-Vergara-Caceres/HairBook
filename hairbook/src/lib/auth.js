@@ -55,6 +55,7 @@ export function crearTokenSesion(usuario) {
     rut: usuario.rut,
     nombre: usuario.nombre,
     roles: obtenerRolesUsuario(usuario),
+    authVersion: usuario.authVersion || 0,
     exp: Math.floor(Date.now() / 1000) + SESSION_DURATION_SECONDS,
   };
 
