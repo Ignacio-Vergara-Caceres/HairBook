@@ -35,17 +35,25 @@ const modulos = [
     activo: true,
   },
   {
+    titulo: "Estadísticas",
+    descripcion:
+      "Consulta los indicadores de reservas, citas aprobadas, rechazadas e ingresos estimados.",
+    numero: "05",
+    href: "/admin/estadisticas",
+    activo: true,
+  },
+  {
     titulo: "Clientas",
     descripcion:
       "Accede a las fichas de clientas y a su historial de atención.",
-    numero: "05",
+    numero: "06",
     activo: false,
   },
   {
     titulo: "Servicios",
     descripcion:
       "Administra el catálogo, precios referenciales y duración de los servicios.",
-    numero: "06",
+    numero: "07",
     activo: false,
   },
 ];
