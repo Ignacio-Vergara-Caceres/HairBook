@@ -40,7 +40,22 @@ function descripcionCambio(r, estado, fecha, hora, modifica) {
   const fechaTexto = fecha.split("-").reverse().join("/");
   const base = `HairBook: Tu reserva de ${r.servicioNombre}`;
   if (modifica) return `${base} fue reprogramada para el ${fechaTexto} a las ${hora}. Si tienes dudas, responde a este mensaje.`;
-  if (estado === "confirmada") return `${base} para el ${fechaTexto} a las ${hora} fue confirmada. ¡Te esperamos!`;
+  
+
+  if (estado === "confirmada") {
+  return `${base} para el ${fechaTexto} a las ${hora} fue confirmada.
+
+  Para realizar el pago, te compartimos nuestros datos de transferencia:
+
+  Banco: Banco Ejemplo
+  Titular: HairBook
+  RUT: 12.345.678-9
+  Tipo de cuenta: Cuenta corriente
+  N.º de cuenta: 000123456789
+  Correo: correo@ficticio.com
+
+  ¡Te esperamos!`;
+  }
   if (estado === "cancelada") return `${base} para el ${fechaTexto} a las ${hora} fue cancelada. Escríbenos si necesitas ayuda.`;
   if (estado === "rechazada") return `${base} para el ${fechaTexto} a las ${hora} fue rechazada. Puedes escribirnos para buscar otro horario.`;
   return "";
