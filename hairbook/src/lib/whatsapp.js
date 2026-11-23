@@ -67,23 +67,6 @@ export function parametrosPlantillaReserva({
   }));
 }
 
-
-  const fechaLegible = fecha.split("-").reverse().join("/");
-  const precio = Number(precioReferencial);
-  const precioLegible = precioReferencial != null && Number.isFinite(precio) && precio > 0
-    ? `Desde ${new Intl.NumberFormat("es-CL", {
-        style: "currency",
-        currency: "CLP",
-        maximumFractionDigits: 0,
-      }).format(precio)}`
-    : "Por confirmar";
-
-  return [fechaLegible, hora, servicioNombre.trim(), precioLegible].map((texto) => ({
-    type: "text",
-    text: texto,
-  }));
-}
-
 export async function enviarWhatsappReservaRecibida(telefono, datosReserva) {
   const numero = normalizarTelefonoWhatsapp(telefono);
   if (!numero) return { estado: "sin_telefono_valido" };
