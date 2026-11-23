@@ -47,12 +47,12 @@ function descripcionCambio(r, estado, fecha, hora, modifica) {
 
   Para realizar el pago, te compartimos nuestros datos de transferencia:
 
-  Banco: Banco Ejemplo
+  Banco: Banco Santander
   Titular: HairBook
-  RUT: 12.345.678-9
+  RUT: 21.052.152-6
   Tipo de cuenta: Cuenta corriente
-  N.º de cuenta: 000123456789
-  Correo: correo@ficticio.com
+  N.º de cuenta: 000096375310
+  Correo: venegasjavier198@gmail.com
 
   ¡Te esperamos!`;
   }
