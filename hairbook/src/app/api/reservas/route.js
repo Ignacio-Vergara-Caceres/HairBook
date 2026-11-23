@@ -118,12 +118,15 @@ export async function POST(request) {
       }
       let whatsapp;
       try {
-        whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono, {
-          fecha: documento.fecha,
-          hora: documento.hora,
-          servicioNombre: documento.servicioNombre,
-          precioReferencial: documento.precioReferencial,
-        });
+        
+      whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono, {
+        fecha: documento.fecha,
+        hora: documento.hora,
+        servicioNombre: documento.servicioNombre,
+        precioReferencial: documento.precioReferencial,
+        profesionalNombre: documento.profesionalNombre,
+      });
+
       } catch (error) {
         console.error("No se pudo solicitar notificación de WhatsApp:", error);
         whatsapp = { estado: "error" };
