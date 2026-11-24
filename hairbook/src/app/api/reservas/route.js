@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { normalizarEstadoPago } from "@/lib/estadoPago";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioSesion } from "@/lib/session";
 import { fechaHoraChileAUtc } from "@/lib/fechaChile";
@@ -118,12 +119,15 @@ export async function POST(request) {
       }
       let whatsapp;
       try {
-        whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono, {
-          fecha: documento.fecha,
-          hora: documento.hora,
-          servicioNombre: documento.servicioNombre,
-          precioReferencial: documento.precioReferencial,
-        });
+        
+      whatsapp = await enviarWhatsappReservaRecibida(cliente.telefono, {
+        fecha: documento.fecha,
+        hora: documento.hora,
+        servicioNombre: documento.servicioNombre,
+        precioReferencial: documento.precioReferencial,
+        profesionalNombre: documento.profesionalNombre,
+      });
+
       } catch (error) {
         console.error("No se pudo solicitar notificación de WhatsApp:", error);
         whatsapp = { estado: "error" };
@@ -165,6 +169,7 @@ export async function POST(request) {
           fecha,
           hora,
           estado: "pendiente",
+          estadoPago: documento.estadoPago,
           whatsappEstado: documento.whatsapp.estado,
           precioReferencial: servicio.precioDesde || null,
         },
@@ -214,6 +219,7 @@ export async function GET() {
         fecha: reserva.fecha,
         hora: reserva.hora,
         estado: reserva.estado,
+        estadoPago: normalizarEstadoPago(reserva.estadoPago),
         precioReferencial: reserva.precioReferencial,
       })),
     });

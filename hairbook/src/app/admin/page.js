@@ -35,10 +35,18 @@ const modulos = [
     activo: true,
   },
   {
+    titulo: "Estadísticas",
+    descripcion:
+      "Consulta los indicadores de reservas, citas aprobadas, rechazadas e ingresos estimados.",
+    numero: "05",
+    href: "/admin/estadisticas",
+    activo: true,
+  },
+  {
     titulo: "Clientas",
     descripcion:
       "Accede a las fichas de clientas y a su historial de atención.",
-    numero: "05",
+    numero: "06",
     activo: false,
   },
   {
@@ -71,6 +79,11 @@ export default async function AdminPage() {
             <Link href="/" className={styles.siteLink}>
               Ver sitio
             </Link>
+            {usuario?.roles?.includes("profesional") && (
+              <Link href="/profesional" className={styles.panelLink}>
+                Panel profesional
+              </Link>
+            )}
             <AdminLogoutButton />
           </div>
         </div>

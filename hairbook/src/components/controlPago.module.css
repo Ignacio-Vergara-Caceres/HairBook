@@ -1,0 +1,10 @@
+.pago { margin-top: 14px; padding: 12px; border: 1px solid #e6ded8; border-radius: 10px; background: #fffdf9; color: #241b1d; font-size: 13px; }
+.resumen { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.estado { padding: 5px 9px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+.pendiente { background: #fff3d6; color: #805500; }
+.abonada { background: #e8effb; color: #244c85; }
+.pagada { background: #e5f4e9; color: #226e3e; }
+.pago small { display: block; margin-top: 8px; color: #73676a; }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.acciones button { border: 1px solid #5e2635; border-radius: 8px; background: white; color: #5e2635; font-weight: 700; padding: 8px 10px; cursor: pointer; }
+.acciones button:hover:not(:disabled) { background: #f7f1e9; }

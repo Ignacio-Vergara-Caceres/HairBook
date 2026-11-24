@@ -1,4 +1,5 @@
 import clientPromise from "@/lib/mongodb";
+import { normalizarEstadoPago } from "@/lib/estadoPago";
 import { obtenerUsuarioProfesional } from "@/lib/session";
 import { puedeChatear, reservasDeConversacion } from "@/lib/chatProfesional";
 import { normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
@@ -19,7 +20,7 @@ export async function GET(_request, { params }) {
       db.collection("whatsapp_mensajes").find({ telefono: numero }).sort({ fecha: -1 }).limit(150).toArray(),
       reservasDeConversacion(db, usuario.id, numero),
     ]);
-    return Response.json({ ok: true, conversacion: { telefono: numero, nombre: c.nombre || numero, ventanaAbierta: ventanaAtencionAbierta(c), ultimoMensajeEntrante: c.ultimoMensajeEntrante || null }, mensajes: mensajes.reverse().map(m => ({ id: String(m._id), direccion: m.direccion, tipo: m.tipo, texto: m.texto, fecha: m.fecha, estado: m.estadoEntrega || m.estado })), reservas: reservas.map(r => ({ id: String(r._id), servicio: r.servicioNombre, servicioId: String(r.servicioId), profesionalId: String(r.profesionalId), fecha: r.fecha, hora: r.hora, estado: r.estado, precioReferencial: r.precioReferencial, notas: r.notas || "" })) });
+    return Response.json({ ok: true, conversacion: { telefono: numero, nombre: c.nombre || numero, ventanaAbierta: ventanaAtencionAbierta(c), ultimoMensajeEntrante: c.ultimoMensajeEntrante || null }, mensajes: mensajes.reverse().map(m => ({ id: String(m._id), direccion: m.direccion, tipo: m.tipo, texto: m.texto, fecha: m.fecha, estado: m.estadoEntrega || m.estado })), reservas: reservas.map(r => ({ id: String(r._id), servicio: r.servicioNombre, servicioId: String(r.servicioId), profesionalId: String(r.profesionalId), fecha: r.fecha, hora: r.hora, estado: r.estado, estadoPago: normalizarEstadoPago(r.estadoPago), precioReferencial: r.precioReferencial, notas: r.notas || "" })) });
   } catch (error) {
     console.error("Error leyendo chat profesional:", error);
     return Response.json({ ok: false, mensaje: "No fue posible cargar el chat." }, { status: 500 });
