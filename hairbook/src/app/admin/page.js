@@ -35,12 +35,23 @@ const modulos = [
     activo: true,
   },
   {
-    titulo: "Clientas",
+    titulo: "Estadísticas",
     descripcion:
-      "Accede a las fichas de clientas y a su historial de atención.",
+      "Consulta los indicadores de reservas, citas aprobadas, rechazadas e ingresos estimados.",
     numero: "05",
-    activo: false,
+    href: "/admin/estadisticas",
+    activo: true,
   },
+
+  {
+    titulo: "Clientes",
+    descripcion:
+      "Consulta los clientes registrados, sus reservas y el historial de notas técnicas.",
+    numero: "06",
+    href: "/admin/clientes",
+    activo: true,
+  },
+
   {
     titulo: "Servicios",
     href: "/admin/servicios",
