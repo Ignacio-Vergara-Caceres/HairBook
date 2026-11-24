@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./gestionReservas.module.css";
 import ControlPago from "./ControlPago";
+import NotasReserva from "./NotasReserva";
 import { ESTADOS_PAGO } from "@/lib/estadoPago";
 
 function fechaHoraChile() {
@@ -35,7 +36,7 @@ export default function GestionReservas({ rol = "admin" }) {
   }
   useEffect(() => {
     cargar();
-    if (rol === "admin") fetch("/api/admin/profesionales", { cache: "no-store" }).then(r => r.json()).then(d => { if (d.ok) setProfesionales((d.datos || []).filter(p => p.activo)); }).catch(() => {});
+    if (rol === "admin") fetch("/api/admin/profesionales", { cache: "no-store" }).then(r => r.json()).then(d => { if (d.ok) setProfesionales((d.datos || []).filter(p => p.activo)); }).catch(() => { });
   }, [rol]); // eslint-disable-line react-hooks/exhaustive-deps
   async function gestionar(r, body) {
     if (procesando) return;
@@ -80,6 +81,12 @@ export default function GestionReservas({ rol = "admin" }) {
         return <article key={r.id} className={styles.tarjeta}>
           <div className={styles.titulo}><div><h2>{r.servicio}</h2><p>{r.cliente} · {r.fecha} a las {r.hora}</p><small>Profesional: {r.profesional}</small></div><span className={`${styles.estado} ${styles[r.estado] || ""}`}>{estados[r.estado] || r.estado}</span></div>
           <ControlPago reserva={r} rol={rol} procesando={procesando} gestionar={gestionar} />
+
+          <NotasReserva
+            reservaId={r.id}
+            rol={rol}
+            estado={r.estado}
+          />
           {r.notas && <p className={styles.notas}>Notas: {r.notas}</p>}
           {rol === "admin" && ["pendiente", "confirmada"].includes(r.estado) && <form className={styles.editar} onSubmit={e => { e.preventDefault(); gestionar(r, { accion: "asignar", profesionalId: asignaciones[r.id] }); }}>
             <label>{r.profesionalId ? "Reasignar profesional" : "Asignar reserva anterior"}<select required value={asignaciones[r.id] || ""} onChange={e => setAsignaciones(v => ({ ...v, [r.id]: e.target.value }))}><option value="">Seleccionar profesional</option>{profesionales.filter(p => p.serviciosIds.includes(r.servicioId) && p.id !== r.profesionalId).map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></label>

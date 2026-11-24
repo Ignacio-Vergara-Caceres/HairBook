@@ -89,7 +89,7 @@ function obtenerRango(periodo) {
 }
 
 // ==========================================
-// GRÁFICO 1: DISTRIBUCIÓN DE RESERVAS
+// GRÁFICO CIRCULAR DE RESERVAS
 // ==========================================
 
 function GraficoEstados({ resumen }) {
@@ -144,8 +144,6 @@ function GraficoEstados({ resumen }) {
         padding: "30px 10px",
       }}
     >
-      {/* GRÁFICO CIRCULAR */}
-
       <div
         role="img"
         aria-label={`Distribución de ${total} reservas`}
@@ -193,8 +191,6 @@ function GraficoEstados({ resumen }) {
           </span>
         </div>
       </div>
-
-      {/* LEYENDA */}
 
       <div
         style={{
@@ -270,7 +266,7 @@ function GraficoEstados({ resumen }) {
 }
 
 // ==========================================
-// GRÁFICO 2: DEMANDA POR SERVICIO
+// GRÁFICO DE DEMANDA POR SERVICIO
 // ==========================================
 
 function GraficoServicios({ servicios, servicioId }) {
@@ -301,8 +297,6 @@ function GraficoServicios({ servicios, servicioId }) {
 
   return (
     <div style={{ padding: "24px 0 10px" }}>
-      {/* RESUMEN SUPERIOR */}
-
       <div
         style={{
           display: "flex",
@@ -349,8 +343,6 @@ function GraficoServicios({ servicios, servicioId }) {
         </div>
       </div>
 
-      {/* BARRAS POR SERVICIO */}
-
       <div
         style={{
           display: "flex",
@@ -392,8 +384,6 @@ function GraficoServicios({ servicios, servicioId }) {
                 transition: "all 0.2s ease",
               }}
             >
-              {/* NOMBRE Y CANTIDAD */}
-
               <div
                 style={{
                   display: "flex",
@@ -473,8 +463,6 @@ function GraficoServicios({ servicios, servicioId }) {
                 </span>
               </div>
 
-              {/* BARRA VISUAL */}
-
               <div
                 role="progressbar"
                 aria-label={`Demanda de ${servicio.nombre}`}
@@ -505,8 +493,6 @@ function GraficoServicios({ servicios, servicioId }) {
           );
         })}
       </div>
-
-      {/* CONCLUSIÓN AUTOMÁTICA */}
 
       <div
         style={{
@@ -592,7 +578,7 @@ export default function EstadisticasCliente() {
   const [error, setError] = useState("");
 
   // ========================================
-  // CARGAR ESTADÍSTICAS DESDE LA API
+  // CONSULTAR ESTADÍSTICAS
   // ========================================
 
   useEffect(() => {
@@ -642,7 +628,7 @@ export default function EstadisticasCliente() {
   }, [periodo]);
 
   // ========================================
-  // FILTROS Y CÁLCULOS
+  // FILTROS Y DATOS
   // ========================================
 
   const servicios = datos?.servicios || [];
@@ -651,56 +637,35 @@ export default function EstadisticasCliente() {
     (servicio) => servicio.id === servicioId
   );
 
+  const servicioIdActivo = servicioSeleccionado?.id || "";
+
   const resumen = servicioSeleccionado || datos?.resumen;
 
-  const total = resumen?.total || 0;
-
-  const aprobadas =
-    (resumen?.confirmada || 0) +
-    (resumen?.completada || 0);
-
-  const porcentajeAprobacion = total
-    ? ((aprobadas / total) * 100).toFixed(1)
-    : "0.0";
+  // ========================================
+  // KPI FINANCIEROS
+  // ========================================
 
   const indicadores = [
     {
-      titulo: "Total de reservas",
-      valor: total,
-      descripcion: "Todas las solicitudes registradas",
-    },
-    {
-      titulo: "Reservas aprobadas",
-      valor: aprobadas,
-      descripcion: "Confirmadas y completadas",
-    },
-    {
-      titulo: "Reservas rechazadas",
-      valor: resumen?.rechazada || 0,
-      descripcion: "Solicitudes rechazadas",
-    },
-    {
-      titulo: "Reservas pendientes",
-      valor: resumen?.pendiente || 0,
-      descripcion: "Esperando confirmación",
-    },
-    {
-      titulo: "Citas completadas",
-      valor: resumen?.completada || 0,
-      descripcion: "Atenciones finalizadas",
-    },
-    {
-      titulo: "Ingresos estimados",
-      valor: formatoCLP(resumen?.montoReferencial),
+      titulo: "Ingresos registrados",
+      valor: formatoCLP(resumen?.montoRegistrado),
       descripcion:
-        "Valor estimado de reservas aprobadas",
+        "Suma de abonos vigentes y pagos completos",
       destacada: true,
     },
+    {
+      titulo: "Abonos vigentes",
+      valor: formatoCLP(resumen?.abonosVigentes),
+      descripcion:
+        "50% de reservas abonadas que aún no están pagadas",
+    },
+    {
+      titulo: "Pagos completos",
+      valor: formatoCLP(resumen?.pagosCompletos),
+      descripcion:
+        "100% de reservas marcadas como pagadas",
+    },
   ];
-
-  const serviciosOrdenados = [...servicios].sort(
-    (a, b) => b.total - a.total
-  );
 
   // ========================================
   // INTERFAZ
@@ -724,8 +689,8 @@ export default function EstadisticasCliente() {
           <h1>Estadísticas</h1>
 
           <p>
-            Indicadores generales y estadísticas
-            detalladas por servicio.
+            Análisis de ingresos registrados,
+            reservas y demanda por servicio.
           </p>
         </header>
 
@@ -761,12 +726,12 @@ export default function EstadisticasCliente() {
 
           <p>
             Selecciona un servicio para consultar
-            sus indicadores individuales.
+            sus ingresos y estadísticas individuales.
           </p>
 
           <select
             aria-label="Seleccionar servicio"
-            value={servicioSeleccionado ? servicioId : ""}
+            value={servicioIdActivo}
             onChange={(e) => setServicioId(e.target.value)}
             disabled={cargando || !datos}
             style={{
@@ -796,10 +761,12 @@ export default function EstadisticasCliente() {
           </select>
         </section>
 
-        {/* ESTADOS DE CARGA */}
+        {/* CARGA Y ERRORES */}
 
         {cargando && (
-          <p role="status">Cargando estadísticas...</p>
+          <p role="status">
+            Cargando estadísticas...
+          </p>
         )}
 
         {error && (
@@ -812,7 +779,7 @@ export default function EstadisticasCliente() {
 
         {!cargando && datos && (
           <>
-            {/* TARJETAS KPI */}
+            {/* KPI FINANCIEROS */}
 
             <section className={styles.tarjetas}>
               {indicadores.map((indicador) => (
@@ -849,7 +816,7 @@ export default function EstadisticasCliente() {
               <GraficoEstados resumen={resumen} />
             </section>
 
-            {/* NUEVO GRÁFICO DE DEMANDA */}
+            {/* GRÁFICO DE DEMANDA */}
 
             <section
               className={styles.panelGrafico}
@@ -866,128 +833,12 @@ export default function EstadisticasCliente() {
 
               <GraficoServicios
                 servicios={servicios}
-                servicioId={servicioId}
+                servicioId={servicioIdActivo}
               />
             </section>
-
-            {/* TABLA COMPARATIVA */}
-
-            <section
-              className={styles.panelGrafico}
-              style={{ marginTop: 30 }}
-            >
-              <h2>Detalle por servicio</h2>
-
-              <p>
-                Comparación de reservas e importes
-                estimados para todos los servicios.
-              </p>
-
-              <div
-                style={{
-                  overflowX: "auto",
-                  marginTop: 24,
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    minWidth: 720,
-                    borderCollapse: "collapse",
-                    textAlign: "left",
-                    fontSize: 13,
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      {[
-                        "Servicio",
-                        "Total",
-                        "Aprobadas",
-                        "Pendientes",
-                        "Rechazadas",
-                        "Monto estimado",
-                      ].map((columna) => (
-                        <th
-                          key={columna}
-                          scope="col"
-                          style={{
-                            padding: "14px 10px",
-                            borderBottom:
-                              "2px solid #e6ded8",
-                            color: "#5e2635",
-                          }}
-                        >
-                          {columna}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {serviciosOrdenados.map((servicio) => (
-                      <tr key={servicio.id}>
-                        <td style={celda}>
-                          {servicio.nombre}
-                        </td>
-
-                        <td style={celda}>
-                          {servicio.total}
-                        </td>
-
-                        <td style={celda}>
-                          {servicio.confirmada +
-                            servicio.completada}
-                        </td>
-
-                        <td style={celda}>
-                          {servicio.pendiente}
-                        </td>
-
-                        <td style={celda}>
-                          {servicio.rechazada}
-                        </td>
-
-                        <td style={celda}>
-                          {formatoCLP(
-                            servicio.montoReferencial
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* NOTAS */}
-
-            <p className={styles.nota}>
-              Porcentaje de aprobación del servicio
-              o conjunto seleccionado:{" "}
-              <strong>
-                {porcentajeAprobacion}%
-              </strong>.
-            </p>
-
-            <p className={styles.nota}>
-              Los montos son estimaciones basadas
-              en reservas confirmadas o completadas.
-              No representan pagos efectivamente
-              recibidos.
-            </p>
           </>
         )}
       </div>
     </main>
   );
 }
-
-// ==========================================
-// ESTILOS DE CELDAS
-// ==========================================
-
-const celda = {
-  padding: "14px 10px",
-  borderBottom: "1px solid #e6ded8",
-};
