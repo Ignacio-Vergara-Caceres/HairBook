@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { normalizarEstadoPago } from "@/lib/estadoPago";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioSesion } from "@/lib/session";
 import { fechaHoraChileAUtc } from "@/lib/fechaChile";
@@ -168,6 +169,7 @@ export async function POST(request) {
           fecha,
           hora,
           estado: "pendiente",
+          estadoPago: documento.estadoPago,
           whatsappEstado: documento.whatsapp.estado,
           precioReferencial: servicio.precioDesde || null,
         },
@@ -217,6 +219,7 @@ export async function GET() {
         fecha: reserva.fecha,
         hora: reserva.hora,
         estado: reserva.estado,
+        estadoPago: normalizarEstadoPago(reserva.estadoPago),
         precioReferencial: reserva.precioReferencial,
       })),
     });

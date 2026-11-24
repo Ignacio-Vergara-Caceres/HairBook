@@ -242,11 +242,15 @@
 
   .topbarInner {
     min-height: 70px;
+    gap: 8px;
   }
 
   .brand small {
     display: none;
   }
+
+  .brand { gap: 8px; }
+  .logoutButton { white-space: nowrap; min-height: 44px; padding: 0 12px; }
 
   .siteLink {
     display: none;

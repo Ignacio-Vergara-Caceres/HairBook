@@ -225,7 +225,12 @@ button:disabled { cursor: not-allowed; opacity: 0.7; }
 .empty-mark { width: 58px; height: 58px; border-radius: 50%; border: 1px solid var(--wine); color: var(--wine); display: grid; place-items: center; font-family: Georgia, serif; margin: 0 auto 20px; }
 .empty-state h2 { font-family: Georgia, serif; font-weight: 500; font-size: 30px; margin: 0 0 9px; }
 .empty-state p { color: var(--muted); margin: 0 0 24px; }
-.mobile-logout { display: none; margin-top: 26px; }
+.logout-top { white-space: nowrap; flex-shrink: 0; }
+.aviso-profesional { margin: 0 0 14px; padding: 12px 14px; background: #f7f1e9; color: #75502c; border-radius: 10px; font-size: 13px; line-height: 1.5; }
+.field input:disabled, .field select:disabled { background: #f7f4f0; color: #73676a; cursor: not-allowed; opacity: 1; }
+.reservation-item .status.pago-pendiente { background: #fff3d6; color: #805500; }
+.reservation-item .status.pago-abonada { background: #e8effb; color: #244c85; }
+.reservation-item .status.pago-pagada { background: #e5f4e9; color: #226e3e; }
 
 .footer { margin-top: auto; background: #20191a; color: #c9baba; }
 .footer-inner { min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -251,11 +256,15 @@ button:disabled { cursor: not-allowed; opacity: 0.7; }
 
 @media (max-width: 700px) {
   .container, .narrow-container { width: min(100% - 28px, 1180px); }
-  .topbar-inner { height: 68px; }
+  .topbar-inner { height: 68px; gap: 8px; }
+  .topbar .brand { gap: 7px; }
+  .nav-actions { gap: 8px; }
+  .user-pill { padding: 5px; }
+  .logout-top { min-height: 44px; padding: 0 13px; }
   .brand-copy strong { font-size: 18px; }
   .brand-mark { width: 38px; height: 38px; }
   .desktop-only { display: none; }
-  .user-pill span:last-child { display: none; }
+  .user-pill .user-name { display: none; }
   .hero-grid { min-height: auto; padding: 58px 0 64px; }
   .hero-copy h1 { font-size: 52px; letter-spacing: -2px; }
   .hero-copy > p { font-size: 16px; }
@@ -294,7 +303,6 @@ button:disabled { cursor: not-allowed; opacity: 0.7; }
   .reservation-item { grid-template-columns: 64px 1fr; }
   .reservation-item > .status { grid-column: 2; justify-self: start; }
   .reservation-date { min-height: 56px; }
-  .mobile-logout { display: inline-block; }
   .footer-inner { min-height: 130px; flex-direction: column; justify-content: center; text-align: center; }
 }
 
