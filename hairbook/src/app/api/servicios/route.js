@@ -69,7 +69,7 @@ export async function GET() {
     const db = client.db(process.env.MONGODB_DB || "capstone_peluqueria");
     const collection = db.collection("servicios");
 
-    const cantidad = await collection.countDocuments({ activo: { $ne: false } });
+    const cantidad = await collection.countDocuments({});
     if (cantidad === 0) {
       await collection.insertMany(
         serviciosDemo.map((servicio) => ({ ...servicio, fechaCreacion: new Date() }))

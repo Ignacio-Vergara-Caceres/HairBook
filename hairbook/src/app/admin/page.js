@@ -43,10 +43,11 @@ const modulos = [
   },
   {
     titulo: "Servicios",
+    href: "/admin/servicios",
     descripcion:
       "Administra el catálogo, precios referenciales y duración de los servicios.",
-    numero: "06",
-    activo: false,
+    numero: "07",
+    activo: true,
   },
 ];
 
