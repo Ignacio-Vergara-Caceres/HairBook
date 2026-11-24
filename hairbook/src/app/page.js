@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { rutChilenoValido } from "@/lib/rut";
+import PasswordInput from "@/components/PasswordInput";
 
 function formatoPrecio(valor) {
   if (!valor) return "A confirmar";
@@ -590,8 +591,7 @@ export default function Home() {
 
               <label className="field">
                 <span>Contraseña</span>
-                <input
-                  type="password"
+                <PasswordInput
                   value={modoAuth === "login" ? login.contrasena : registro.contrasena}
                   onChange={(e) =>
                     modoAuth === "login"
