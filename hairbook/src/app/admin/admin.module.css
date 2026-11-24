@@ -244,23 +244,35 @@
 
   .topbarInner {
     min-height: 70px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
     gap: 8px;
+    padding-block: 8px;
   }
 
   .brand small {
     display: none;
   }
 
-  .brand { gap: 8px; }
-  .logoutButton { white-space: nowrap; min-height: 44px; padding: 0 12px; }
-
-  .siteLink {
-    display: none;
+  .brand {
+    gap: 8px;
+    align-self: flex-start;
   }
 
-  .topbarInner:has(.panelLink) { flex-wrap: wrap; padding-block: 8px; }
-  .topActions:has(.panelLink) { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-  .panelLink { min-height: 44px; padding: 0 10px; white-space: nowrap; }
+  .topActions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .siteLink,
+  .panelLink,
+  .logoutButton {
+    min-height: 44px;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
 
   .content {
     padding: 56px 0 72px;
