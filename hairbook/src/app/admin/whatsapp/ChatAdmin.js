@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./whatsapp.module.css";
-import ControlPago from "@/components/ControlPago";
-import { ESTADOS_PAGO } from "@/lib/estadoPago";
 
 const formatFecha = (fecha) => fecha ? new Date(fecha).toLocaleString("es-CL", {
   timeZone: "America/Santiago", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
@@ -85,7 +83,7 @@ export default function ChatAdmin({ telefonoInicial, rol = "admin" }) {
 
   async function gestionarReserva(reserva, body) {
     if (procesando) return;
-    const accion = body.accion === "pago" ? `cambiar el pago a «${ESTADOS_PAGO[body.estadoPago]}» en` : body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "confirmar" : body.estado === "rechazada" ? "rechazar" : body.estado === "cancelada" ? "cancelar" : "completar";
+    const accion = body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "confirmar" : body.estado === "rechazada" ? "rechazar" : body.estado === "cancelada" ? "cancelar" : "completar";
     if (!window.confirm(`¿Deseas ${accion} esta reserva?`)) return;
     setProcesando(true); setError(""); setAviso("");
     try {
@@ -183,7 +181,6 @@ export default function ChatAdmin({ telefonoInicial, rol = "admin" }) {
                 <div className={styles.reservaTitulo}><strong>{reserva.servicio}</strong><span className={styles.etiqueta}>{reserva.estado || "pendiente"}</span></div>
                 <p>{fechaLegible(reserva.fecha)} · {reserva.hora}</p>
                 {reserva.precioReferencial != null && <p>Desde ${Number(reserva.precioReferencial).toLocaleString("es-CL")}</p>}
-                <ControlPago reserva={reserva} rol={rol} procesando={procesando} gestionar={gestionarReserva} />
                 {reserva.notas && <p>Notas: {reserva.notas}</p>}
                 {activa && futura && <div className={styles.acciones}>
                   {reserva.estado === "pendiente" && <>

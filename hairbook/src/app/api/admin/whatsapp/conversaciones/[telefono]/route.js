@@ -1,6 +1,5 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
-import { normalizarEstadoPago } from "@/lib/estadoPago";
 import { obtenerUsuarioAdmin } from "@/lib/session";
 import { normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
 import { ventanaAtencionAbierta } from "@/lib/whatsappInbox";
@@ -40,7 +39,7 @@ export async function GET(_request, { params }) {
       })),
       reservas: reservas.map((r) => ({
         id: String(r._id), servicio: r.servicioNombre, servicioId: String(r.servicioId || ""), profesionalId: r.profesionalId ? String(r.profesionalId) : null, fecha: r.fecha, hora: r.hora,
-        estado: r.estado, estadoPago: normalizarEstadoPago(r.estadoPago), precioReferencial: r.precioReferencial, notas: r.notas || "",
+        estado: r.estado, precioReferencial: r.precioReferencial, notas: r.notas || "",
       })),
     });
   } catch (error) {

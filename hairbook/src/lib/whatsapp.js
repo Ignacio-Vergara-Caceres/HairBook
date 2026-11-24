@@ -20,48 +20,24 @@ export function normalizarTelefonoWhatsapp(telefono) {
  * {{1}} fecha, {{2}} hora, {{3}} servicio, {{4}} valor referencial.
  * Se obtienen de los datos validados/guardados en MongoDB; no del navegador.
  */
-
-export function parametrosPlantillaReserva({
-  fecha,
-  hora,
-  servicioNombre,
-  precioReferencial,
-  profesionalNombre,
-}) {
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(fecha) ||
-    !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora) ||
-    typeof servicioNombre !== "string" ||
-    !servicioNombre.trim() ||
-    typeof profesionalNombre !== "string" ||
-    !profesionalNombre.trim()
-  ) {
-    throw new Error(
-      "Datos incompletos para la plantilla de reserva de WhatsApp"
-    );
+export function parametrosPlantillaReserva({ fecha, hora, servicioNombre, precioReferencial }) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) ||
+      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora) ||
+      typeof servicioNombre !== "string" || !servicioNombre.trim()) {
+    throw new Error("Datos incompletos para la plantilla de reserva de WhatsApp");
   }
 
   const fechaLegible = fecha.split("-").reverse().join("/");
   const precio = Number(precioReferencial);
+  const precioLegible = precioReferencial != null && Number.isFinite(precio) && precio > 0
+    ? `Desde ${new Intl.NumberFormat("es-CL", {
+        style: "currency",
+        currency: "CLP",
+        maximumFractionDigits: 0,
+      }).format(precio)}`
+    : "Por confirmar";
 
-  const precioLegible =
-    precioReferencial != null &&
-    Number.isFinite(precio) &&
-    precio > 0
-      ? `Desde ${new Intl.NumberFormat("es-CL", {
-          style: "currency",
-          currency: "CLP",
-          maximumFractionDigits: 0,
-        }).format(precio)}`
-      : "Por confirmar";
-
-  return [
-    fechaLegible,
-    hora,
-    servicioNombre.trim(),
-    precioLegible,
-    profesionalNombre.trim(),
-  ].map((texto) => ({
+  return [fechaLegible, hora, servicioNombre.trim(), precioLegible].map((texto) => ({
     type: "text",
     text: texto,
   }));

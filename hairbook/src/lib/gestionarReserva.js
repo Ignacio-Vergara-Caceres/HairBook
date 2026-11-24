@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import { ESTADOS_PAGO, estadoPagoValido, normalizarEstadoPago, permiteGestionPago } from "./estadoPago";
 import clientPromise from "./mongodb";
 import { obtenerUsuarioAdmin, obtenerUsuarioProfesional } from "./session";
 import { fechaHoraChileAUtc } from "./fechaChile";
@@ -29,8 +28,6 @@ export async function listarReservas(tipo) {
       profesionalId: r.profesionalId ? String(r.profesionalId) : null,
       profesional: r.profesionalNombre || nombres.get(String(r.profesionalId)) || "Sin asignar (reserva anterior)",
       fecha: r.fecha, hora: r.hora, estado: r.estado || "pendiente", notas: r.notas || "",
-      estadoPago: normalizarEstadoPago(r.estadoPago),
-      fechaConfirmacionPago: r.fechaConfirmacionPago || null,
       telefono: r.whatsapp?.consentimiento ? (normalizarTelefonoWhatsapp(r.whatsapp.numero) || telefonos.get(String(r.clienteId)) || null) : null,
     })) });
   } catch (error) {
@@ -43,22 +40,7 @@ function descripcionCambio(r, estado, fecha, hora, modifica) {
   const fechaTexto = fecha.split("-").reverse().join("/");
   const base = `HairBook: Tu reserva de ${r.servicioNombre}`;
   if (modifica) return `${base} fue reprogramada para el ${fechaTexto} a las ${hora}. Si tienes dudas, responde a este mensaje.`;
-  
-
-  if (estado === "confirmada") {
-  return `${base} para el ${fechaTexto} a las ${hora} fue confirmada.
-
-  Para realizar el pago, te compartimos nuestros datos de transferencia:
-
-  Banco: Banco Santander
-  Titular: HairBook
-  RUT: 21.052.152-6
-  Tipo de cuenta: Cuenta corriente
-  N.º de cuenta: 000096375310
-  Correo: venegasjavier198@gmail.com
-
-  ¡Te esperamos!`;
-  }
+  if (estado === "confirmada") return `${base} para el ${fechaTexto} a las ${hora} fue confirmada. ¡Te esperamos!`;
   if (estado === "cancelada") return `${base} para el ${fechaTexto} a las ${hora} fue cancelada. Escríbenos si necesitas ayuda.`;
   if (estado === "rechazada") return `${base} para el ${fechaTexto} a las ${hora} fue rechazada. Puedes escribirnos para buscar otro horario.`;
   return "";
@@ -94,41 +76,15 @@ export async function actualizarReserva(request, { params }, tipo) {
     const { id } = await params;
     if (!idValido(id)) return Response.json({ ok: false, mensaje: "ID de reserva inválido." }, { status: 400 });
     const body = await request.json().catch(() => ({}));
-    const pago = body.accion === "pago";
-    if (pago && tipo !== "profesional") return sinPermiso();
-    if (pago && !estadoPagoValido(body.estadoPago)) return Response.json({ ok: false, mensaje: "Estado de pago inválido." }, { status: 400 });
     const modificacion = body.accion === "modificar";
     const asignacion = body.accion === "asignar" && tipo === "admin";
     const estadosPermitidos = ["confirmada", "rechazada", "cancelada", "completada"];
-    if (!pago && !modificacion && !asignacion && !estadosPermitidos.includes(body.estado)) return Response.json({ ok: false, mensaje: "Acción no permitida." }, { status: 400 });
+    if (!modificacion && !asignacion && !estadosPermitidos.includes(body.estado)) return Response.json({ ok: false, mensaje: "Acción no permitida." }, { status: 400 });
     const db = (await clientPromise).db(process.env.MONGODB_DB || "capstone_peluqueria");
     const col = db.collection("reservas");
     const r = await col.findOne({ _id: new ObjectId(id), ...filtroActor(tipo, actor) });
     if (!r) return Response.json({ ok: false, mensaje: "Reserva no encontrada o no asignada a tu cuenta." }, { status: 404 });
     const estadoActual = r.estado || "pendiente";
-    // El pago se gestiona por separado, incluso después de realizada la atención.
-    if (pago) {
-      if (!permiteGestionPago(estadoActual)) return Response.json({ ok: false, mensaje: "Solo puedes registrar pagos de reservas confirmadas o completadas." }, { status: 409 });
-      const estadoPagoActual = normalizarEstadoPago(r.estadoPago);
-      if (body.estadoPagoAnterior !== estadoPagoActual) return Response.json({ ok: false, mensaje: "El estado de pago cambió. Actualiza la página." }, { status: 409 });
-      if (body.estadoPago === estadoPagoActual) return Response.json({ ok: true, mensaje: "El pago ya tiene ese estado.", estadoPago: estadoPagoActual });
-      const ahora = new Date();
-      const resultado = await col.updateOne({
-        _id: r._id, ...filtroActor(tipo, actor), estado: r.estado,
-        estadoPago: r.estadoPago === undefined ? { $exists: false } : r.estadoPago,
-      }, {
-        $set: {
-          estadoPago: body.estadoPago,
-          fechaActualizacionPago: ahora,
-          pagoGestionadoPor: actor.id,
-          fechaConfirmacionPago: body.estadoPago === "pendiente" ? null : ahora,
-          fechaActualizacion: ahora,
-        },
-        $push: { historialPago: { anterior: estadoPagoActual, nuevo: body.estadoPago, fecha: ahora, profesionalId: actor.id } },
-      });
-      if (!resultado.modifiedCount) return Response.json({ ok: false, mensaje: "La reserva cambió. Actualiza la página." }, { status: 409 });
-      return Response.json({ ok: true, mensaje: `Estado de pago actualizado: ${ESTADOS_PAGO[body.estadoPago]}.`, estadoPago: body.estadoPago });
-    }
     const transiciones = { pendiente: ["confirmada", "rechazada", "cancelada"], confirmada: ["cancelada", "completada"] };
     if ((modificacion || asignacion) ? !["pendiente", "confirmada"].includes(estadoActual) : !(transiciones[estadoActual] || []).includes(body.estado)) {
       return Response.json({ ok: false, mensaje: "El estado actual no permite esa acción." }, { status: 409 });
