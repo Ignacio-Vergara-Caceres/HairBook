@@ -78,6 +78,11 @@ export default async function AdminPage() {
             <Link href="/" className={styles.siteLink}>
               Ver sitio
             </Link>
+            {usuario?.roles?.includes("profesional") && (
+              <Link href="/profesional" className={styles.panelLink}>
+                Panel profesional
+              </Link>
+            )}
             <AdminLogoutButton />
           </div>
         </div>

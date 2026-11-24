@@ -334,12 +334,14 @@ export default function Home() {
           <nav className="desktop-nav" aria-label="Navegación principal">
             <button onClick={volverInicio}>Inicio</button>
             <button onClick={abrirServicios}>Servicios</button>
-            {usuarioEsAdmin(usuario) ? (
+            {usuarioEsAdmin(usuario) && (
               <button onClick={abrirAdmin}>Panel admin</button>
-            ) : usuarioEsProfesional(usuario) ? (
+            )}
+            {usuarioEsProfesional(usuario) && (
               <button onClick={abrirProfesional}>Panel profesional</button>
-            ) : (
-              usuario && <button onClick={verReservas}>Mis reservas</button>
+            )}
+            {usuario && !usuarioEsAdmin(usuario) && !usuarioEsProfesional(usuario) && (
+              <button onClick={verReservas}>Mis reservas</button>
             )}
           </nav>
           <div className="nav-actions">
@@ -364,6 +366,12 @@ export default function Home() {
             )}
           </div>
         </div>
+        {usuarioEsAdmin(usuario) && usuarioEsProfesional(usuario) && (
+          <nav className="mobile-role-nav container" aria-label="Paneles de gestión">
+            <button type="button" className="button button-small button-outline" onClick={abrirAdmin}>Panel admin</button>
+            <button type="button" className="button button-small button-outline" onClick={abrirProfesional}>Panel profesional</button>
+          </nav>
+        )}
       </header>
 
       {pantalla === "inicio" && (

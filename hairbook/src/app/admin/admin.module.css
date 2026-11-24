@@ -72,6 +72,7 @@
 }
 
 .siteLink,
+.panelLink,
 .logoutButton {
   min-height: 40px;
   padding: 0 17px;
@@ -84,7 +85,8 @@
   text-decoration: none;
 }
 
-.siteLink {
+.siteLink,
+.panelLink {
   border: 1px solid #e6ded8;
   background: white;
   color: #241b1d;
@@ -255,6 +257,10 @@
   .siteLink {
     display: none;
   }
+
+  .topbarInner:has(.panelLink) { flex-wrap: wrap; padding-block: 8px; }
+  .topActions:has(.panelLink) { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .panelLink { min-height: 44px; padding: 0 10px; white-space: nowrap; }
 
   .content {
     padding: 56px 0 72px;

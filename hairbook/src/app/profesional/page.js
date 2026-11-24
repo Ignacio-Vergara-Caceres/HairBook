@@ -13,7 +13,13 @@ export default async function ProfesionalPage() {
   return <main className={styles.shell}>
     <header className={styles.topbar}><div className={styles.topbarInner}>
       <Link href="/profesional" className={styles.brand}><span className={styles.brandMark}>HB</span><span><strong>HairBook</strong><small>Panel profesional</small></span></Link>
-      <div className={styles.topActions}><Link href="/" className={styles.siteLink}>Ver sitio</Link><AdminLogoutButton /></div>
+      <div className={styles.topActions}>
+        <Link href="/" className={styles.siteLink}>Ver sitio</Link>
+        {usuario.roles.includes("admin") && (
+          <Link href="/admin" className={styles.panelLink}>Panel admin</Link>
+        )}
+        <AdminLogoutButton />
+      </div>
     </div></header>
     <section className={styles.content}>
       <div className={styles.heading}><span className={styles.eyebrow}>Mi agenda</span><h1>Hola, {usuario.nombre.split(" ")[0]}</h1><p>Gestiona tus horas directamente, sin esperar aprobación administrativa.</p></div>
