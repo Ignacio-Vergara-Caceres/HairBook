@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { obtenerUsuarioAdmin } from "@/lib/session";
 import { validarServicio } from "@/lib/validarServicio";
@@ -17,9 +18,11 @@ export async function POST(request) {
     const { campos, error } = validarServicio(await request.json());
     if (error) return Response.json({ ok: false, mensaje: error }, { status: 400 });
     const col = await dbServicios();
-    if (await col.findOne({ codigo: campos.codigo })) return Response.json({ ok: false, mensaje: "Ya existe un servicio con ese código." }, { status: 409 });
-    const doc = { ...campos, activo: campos.activo ?? true, destacado: campos.destacado ?? false, fechaCreacion: new Date() };
-    const r = await col.insertOne(doc);
-    return Response.json({ ok: true, datos: { ...doc, _id: String(r.insertedId) } }, { status: 201 });
+    // MongoDB genera un identificador único; derivamos de él un código estable
+    // para conservar la compatibilidad con las reservas y servicios existentes.
+    const _id = new ObjectId();
+    const doc = { _id, ...campos, codigo: `SRV_${_id.toHexString().toUpperCase()}`, activo: campos.activo ?? true, destacado: campos.destacado ?? false, fechaCreacion: new Date() };
+    await col.insertOne(doc);
+    return Response.json({ ok: true, datos: { ...doc, _id: String(_id) } }, { status: 201 });
   } catch (error) { console.error("Error creando servicio:", error); return Response.json({ ok: false, mensaje: "No se pudo crear el servicio." }, { status: 500 }); }
 }

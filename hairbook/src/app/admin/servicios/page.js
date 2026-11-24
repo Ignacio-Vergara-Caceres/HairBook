@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./servicios.module.css";
 
-const inicial = { codigo: "", nombre: "", categoria: "", descripcion: "", precioDesde: "", duracionMin: "", destacado: false, activo: true };
+const inicial = { nombre: "", categoria: "", descripcion: "", precioDesde: "", duracionMin: "", destacado: false, activo: true };
 const dinero = n => new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(n || 0);
 export default function AdminServiciosPage() {
   const [servicios, setServicios] = useState([]);
@@ -23,7 +23,7 @@ export default function AdminServiciosPage() {
     finally { setCargando(false); }
   }
   useEffect(() => { cargar(); }, []);
-  function editar(s) { setEditando(s._id); setForm({ codigo: s.codigo || "", nombre: s.nombre || "", categoria: s.categoria || "", descripcion: s.descripcion || "", precioDesde: String(s.precioDesde ?? ""), duracionMin: String(s.duracionMin ?? ""), destacado: s.destacado === true, activo: s.activo !== false }); setError(""); setMensaje(""); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function editar(s) { setEditando(s._id); setForm({ nombre: s.nombre || "", categoria: s.categoria || "", descripcion: s.descripcion || "", precioDesde: String(s.precioDesde ?? ""), duracionMin: String(s.duracionMin ?? ""), destacado: s.destacado === true, activo: s.activo !== false }); setError(""); setMensaje(""); window.scrollTo({ top: 0, behavior: "smooth" }); }
   function cancelar() { setEditando(""); setForm(inicial); }
   async function enviar(url, method, body) {
     setOcupado(true); setError(""); setMensaje("");
@@ -38,7 +38,7 @@ export default function AdminServiciosPage() {
   }
   function guardar(e) {
     e.preventDefault();
-    const body = { ...form, codigo: form.codigo.trim().toUpperCase(), precioDesde: Number(form.precioDesde), duracionMin: Number(form.duracionMin) };
+    const body = { ...form, precioDesde: Number(form.precioDesde), duracionMin: Number(form.duracionMin) };
     enviar(editando ? `/api/admin/servicios/${editando}` : "/api/admin/servicios", editando ? "PATCH" : "POST", body);
   }
   function cambiarEstado(s) {
@@ -49,13 +49,11 @@ export default function AdminServiciosPage() {
   return <main className={styles.pagina}>
     <Link href="/admin" className={styles.volver}>← Volver al panel</Link>
     <h1>Gestión de servicios</h1>
-    <p>Los servicios activos aparecen en la página de los clientes. Al desactivar un servicio se conserva el historial de reservas; no se elimina de MongoDB.</p>
     {mensaje && <p className={styles.exito} role="status">{mensaje}</p>}
     {error && <p className={styles.error} role="alert">{error}</p>}
     <form onSubmit={guardar} className={styles.form}>
       <h2>{editando ? "Editar servicio" : "Crear servicio"}</h2>
       <div className={styles.campos}>
-        <label>Código único<input required pattern="[A-Za-z0-9_]{2,50}" maxLength={50} value={form.codigo} onChange={e => setForm({ ...form, codigo: e.target.value.toUpperCase() })} placeholder="CORTE_NUEVO" /></label>
         <label>Nombre<input required minLength={2} maxLength={120} value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Corte de cabello" /></label>
         <label>Categoría<input required minLength={2} maxLength={120} value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })} placeholder="Corte" /></label>
         <label>Precio desde (CLP)<input required type="number" min="0" max="100000000" step="1" value={form.precioDesde} onChange={e => setForm({ ...form, precioDesde: e.target.value })} /></label>
@@ -71,7 +69,7 @@ export default function AdminServiciosPage() {
     <h2>Servicios registrados ({servicios.length})</h2>
     {cargando ? <p>Cargando servicios...</p> : servicios.length === 0 ? <p>No hay servicios registrados.</p> : <div className={styles.listado}>{servicios.map(s => <article key={s._id} className={styles.tarjeta}>
       <div><div className={styles.encabezado}><h3>{s.nombre}</h3><span className={s.activo === false ? styles.inactivo : styles.activo}>{s.activo === false ? "Desactivado" : "Activo"}</span></div>
-      <p>{s.categoria} · {s.codigo} {s.destacado ? "· Destacado" : ""}</p><p>{s.descripcion}</p><strong>{dinero(s.precioDesde)} · {s.duracionMin} min</strong></div>
+      <p>{s.categoria} {s.destacado ? "· Destacado" : ""}</p><p>{s.descripcion}</p><strong>{dinero(s.precioDesde)} · {s.duracionMin} min</strong></div>
       <div className={styles.botones}><button type="button" disabled={ocupado} onClick={() => editar(s)}>Editar</button><button type="button" disabled={ocupado} className={styles.secundario} onClick={() => cambiarEstado(s)}>{s.activo === false ? "Reactivar" : "Desactivar"}</button></div>
     </article>)}</div>}
   </main>;
