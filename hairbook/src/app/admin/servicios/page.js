@@ -41,6 +41,19 @@ export default function AdminServiciosPage() {
     const body = { ...form, precioDesde: Number(form.precioDesde), duracionMin: Number(form.duracionMin) };
     enviar(editando ? `/api/admin/servicios/${editando}` : "/api/admin/servicios", editando ? "PATCH" : "POST", body);
   }
+  async function eliminarServicio(s) {
+    if (!window.confirm(`¿Eliminar definitivamente «${s.nombre}»? Esta acción no se puede deshacer. Si tiene reservas asociadas, no se permitirá la eliminación.`)) return;
+    setOcupado(true); setError(""); setMensaje("");
+    try {
+      const r = await fetch(`/api/admin/servicios/${s._id}`, { method: "DELETE" });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw Error(d.mensaje || "No se pudo eliminar el servicio.");
+      if (editando === s._id) cancelar();
+      setMensaje("Servicio eliminado definitivamente.");
+      await cargar();
+    } catch (e) { setError(e.message); }
+    finally { setOcupado(false); }
+  }
   function cambiarEstado(s) {
     const activo = s.activo === false;
     if (!window.confirm(`¿${activo ? "Reactivar" : "Desactivar"} «${s.nombre}»? ${activo ? "Volverá a aparecer en el catálogo." : "Dejará de aparecer en el catálogo y no se podrá reservar, pero se conservará su historial."}`)) return;
@@ -70,7 +83,7 @@ export default function AdminServiciosPage() {
     {cargando ? <p>Cargando servicios...</p> : servicios.length === 0 ? <p>No hay servicios registrados.</p> : <div className={styles.listado}>{servicios.map(s => <article key={s._id} className={styles.tarjeta}>
       <div><div className={styles.encabezado}><h3>{s.nombre}</h3><span className={s.activo === false ? styles.inactivo : styles.activo}>{s.activo === false ? "Desactivado" : "Activo"}</span></div>
       <p>{s.categoria} {s.destacado ? "· Destacado" : ""}</p><p>{s.descripcion}</p><strong>{dinero(s.precioDesde)} · {s.duracionMin} min</strong></div>
-      <div className={styles.botones}><button type="button" disabled={ocupado} onClick={() => editar(s)}>Editar</button><button type="button" disabled={ocupado} className={styles.secundario} onClick={() => cambiarEstado(s)}>{s.activo === false ? "Reactivar" : "Desactivar"}</button></div>
+      <div className={styles.botones}><button type="button" disabled={ocupado} onClick={() => editar(s)}>Editar</button><button type="button" disabled={ocupado} className={styles.secundario} onClick={() => cambiarEstado(s)}>{s.activo === false ? "Reactivar" : "Desactivar"}</button><button type="button" disabled={ocupado} className={styles.eliminar} onClick={() => eliminarServicio(s)}>Eliminar</button></div>
     </article>)}</div>}
   </main>;
 }

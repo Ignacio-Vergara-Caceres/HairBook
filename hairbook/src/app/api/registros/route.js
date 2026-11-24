@@ -3,7 +3,7 @@ import { obtenerUsuarioAdmin } from "@/lib/session";
 
 // Esta API es legado del prototipo; la colección usuarios se administra
 // únicamente desde los endpoints de autenticación.
-const coleccionesPermitidas = ["negocios"];
+const coleccionesPermitidas = ["negocios", "profesionales"];
 
 export async function POST(request) {
   if (!(await obtenerUsuarioAdmin())) {

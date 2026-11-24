@@ -1,3 +1,4 @@
+import { rutChilenoValido } from "@/lib/rut";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { normalizarTelefonoWhatsapp } from "@/lib/whatsapp";
@@ -20,6 +21,27 @@ export async function POST(request) {
     if (!nombre || !rut || !telefono || !contrasena) {
       return Response.json(
         { ok: false, mensaje: "Nombre, RUT, teléfono y contraseña son obligatorios." },
+        { status: 400 }
+      );
+    }
+
+    if (nombre.length < 2 || nombre.length > 120) {
+      return Response.json(
+        { ok: false, mensaje: "El nombre debe tener entre 2 y 120 caracteres." },
+        { status: 400 }
+      );
+    }
+
+    if (correo && (correo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo))) {
+      return Response.json(
+        { ok: false, mensaje: "Ingresa un correo electrónico válido o deja ese campo vacío." },
+        { status: 400 }
+      );
+    }
+
+    if (!rutChilenoValido(rut)) {
+      return Response.json(
+        { ok: false, mensaje: "Ingresa un RUT chileno válido (incluido su dígito verificador)." },
         { status: 400 }
       );
     }

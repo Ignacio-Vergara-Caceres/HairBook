@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ESTADOS_PAGO, normalizarEstadoPago } from "@/lib/estadoPago";
+import { rutChilenoValido } from "@/lib/rut";
+import PasswordInput from "@/components/PasswordInput";
 
 function formatoPrecio(valor) {
   if (!valor) return "A confirmar";
@@ -120,14 +121,12 @@ export default function Home() {
   useEffect(() => {
     if (!reserva.fecha || !reserva.profesionalId || !servicioSeleccionado?._id) {
       setHorariosDisponibles([]);
-      setCargandoHorarios(false);
       return;
     }
 
     let cancelado = false;
     const cargarDisponibilidad = async () => {
       setCargandoHorarios(true);
-      setHorariosDisponibles([]);
       setMensajeReserva("");
 
       try {
@@ -210,6 +209,12 @@ export default function Home() {
     evento.preventDefault();
     setEnviandoAuth(true);
     setMensajeAuth("");
+
+    if (modoAuth === "registro" && !rutChilenoValido(registro.rut)) {
+      setMensajeAuth("Ingresa un RUT chileno válido (incluido su dígito verificador).");
+      setEnviandoAuth(false);
+      return;
+    }
 
     const endpoint = modoAuth === "login" ? "/api/auth/login" : "/api/auth/register";
     const datos = modoAuth === "login" ? login : registro;
@@ -334,14 +339,12 @@ export default function Home() {
           <nav className="desktop-nav" aria-label="Navegación principal">
             <button onClick={volverInicio}>Inicio</button>
             <button onClick={abrirServicios}>Servicios</button>
-            {usuarioEsAdmin(usuario) && (
+            {usuarioEsAdmin(usuario) ? (
               <button onClick={abrirAdmin}>Panel admin</button>
-            )}
-            {usuarioEsProfesional(usuario) && (
+            ) : usuarioEsProfesional(usuario) ? (
               <button onClick={abrirProfesional}>Panel profesional</button>
-            )}
-            {usuario && !usuarioEsAdmin(usuario) && !usuarioEsProfesional(usuario) && (
-              <button onClick={verReservas}>Mis reservas</button>
+            ) : (
+              usuario && <button onClick={verReservas}>Mis reservas</button>
             )}
           </nav>
           <div className="nav-actions">
@@ -351,13 +354,12 @@ export default function Home() {
               <>
                 <button
                   className="user-pill"
-                  aria-label={usuarioEsAdmin(usuario) ? "Panel de administración" : usuarioEsProfesional(usuario) ? "Panel profesional" : "Mis reservas"}
                   onClick={usuarioEsAdmin(usuario) ? abrirAdmin : usuarioEsProfesional(usuario) ? abrirProfesional : verReservas}
                 >
                   <span className="avatar">{usuario.nombre?.charAt(0)?.toUpperCase() || "C"}</span>
-                  <span className="user-name">{usuario.nombre?.split(" ")[0]}</span>
+                  <span>{usuario.nombre?.split(" ")[0]}</span>
                 </button>
-                <button type="button" className="button button-small button-outline logout-top" onClick={cerrarSesion} aria-label="Cerrar sesión">Salir</button>
+                <button className="link-button desktop-only" onClick={cerrarSesion}>Salir</button>
               </>
             ) : (
               <button className="button button-small button-outline" onClick={() => navegar("auth")}>
@@ -366,12 +368,6 @@ export default function Home() {
             )}
           </div>
         </div>
-        {usuarioEsAdmin(usuario) && usuarioEsProfesional(usuario) && (
-          <nav className="mobile-role-nav container" aria-label="Paneles de gestión">
-            <button type="button" className="button button-small button-outline" onClick={abrirAdmin}>Panel admin</button>
-            <button type="button" className="button button-small button-outline" onClick={abrirProfesional}>Panel profesional</button>
-          </nav>
-        )}
       </header>
 
       {pantalla === "inicio" && (
@@ -595,8 +591,7 @@ export default function Home() {
 
               <label className="field">
                 <span>Contraseña</span>
-                <input
-                  type="password"
+                <PasswordInput
                   value={modoAuth === "login" ? login.contrasena : registro.contrasena}
                   onChange={(e) =>
                     modoAuth === "login"
@@ -646,15 +641,12 @@ export default function Home() {
                   {!cargandoProfesionales && profesionales.length === 0 && <small style={{ color: "#a32e39", display: "block", marginTop: 8 }}>No hay profesionales habilitados para este servicio. Consulta con la peluquería.</small>}
                 </label>
                 <div className="step-heading second"><span>2</span><div><strong>Elige tu horario</strong><small>Verás las horas disponibles del profesional seleccionado.</small></div></div>
-                {!reserva.profesionalId && <p id="aviso-profesional" className="aviso-profesional" role="status">Debes seleccionar un profesional para elegir la fecha y consultar los horarios disponibles.</p>}
                 <div className="field-row">
                   <label className="field">
                     <span>Fecha</span>
                     <input
                       type="date"
                       min={fechaMinima()}
-                      disabled={!reserva.profesionalId}
-                      aria-describedby={!reserva.profesionalId ? "aviso-profesional" : undefined}
                       value={reserva.fecha}
                       onChange={(e) =>
                         setReserva({
@@ -678,12 +670,9 @@ export default function Home() {
                         })
                       }
                       disabled={!reserva.fecha || !reserva.profesionalId || cargandoHorarios}
-                      aria-describedby={!reserva.profesionalId ? "aviso-profesional" : undefined}
                       required
                     >
-                      {!reserva.profesionalId ? (
-                        <option value="">Elige un profesional primero</option>
-                      ) : !reserva.fecha ? (
+                      {!reserva.fecha ? (
                         <option value="">Selecciona una fecha</option>
                       ) : cargandoHorarios ? (
                         <option value="">Consultando horarios...</option>
@@ -817,7 +806,6 @@ export default function Home() {
                       <h3>{item.servicio}</h3>
                       <p>Profesional: {item.profesional || "Sin asignar"}</p>
                       <p>{item.hora} hrs · Desde {formatoPrecio(item.precioReferencial)}</p>
-                      <p>Pago: <strong className={`status pago-${normalizarEstadoPago(item.estadoPago)}`}>{ESTADOS_PAGO[normalizarEstadoPago(item.estadoPago)]}</strong></p>
                     </div>
                     <span
                       className={`status ${item.estado === "pendiente"
@@ -844,6 +832,7 @@ export default function Home() {
               </div>
             )}
 
+            <button className="link-button mobile-logout" onClick={cerrarSesion}>Cerrar sesión</button>
           </div>
         </section>
       )}

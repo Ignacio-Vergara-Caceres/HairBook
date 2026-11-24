@@ -39,8 +39,7 @@ export default function GestionReservas({ rol = "admin" }) {
     if (rol === "admin") fetch("/api/admin/profesionales", { cache: "no-store" }).then(r => r.json()).then(d => { if (d.ok) setProfesionales((d.datos || []).filter(p => p.activo)); }).catch(() => { });
   }, [rol]); // eslint-disable-line react-hooks/exhaustive-deps
   async function gestionar(r, body) {
-    if (procesando) return;
-    const etiqueta = body.accion === "pago" ? `cambiar el pago a «${ESTADOS_PAGO[body.estadoPago]}» en` : body.accion === "asignar" ? "asignar" : body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "aceptar" : body.estado === "rechazada" ? "rechazar" : body.estado === "cancelada" ? "cancelar" : "completar";
+    const etiqueta = body.accion === "modificar" ? "reprogramar" : body.estado === "confirmada" ? "aceptar" : body.estado === "rechazada" ? "rechazar" : body.estado === "cancelada" ? "cancelar" : "completar";
     if (!window.confirm(`¿Quieres ${etiqueta} esta reserva?`)) return;
     setProcesando(r.id); setError(""); setMensaje("");
     try {

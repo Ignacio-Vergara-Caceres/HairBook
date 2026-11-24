@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./profesionales.module.css";
+import PasswordInput from "@/components/PasswordInput";
 
 const vacio = { nombre: "", rut: "", contrasena: "", especialidad: "", serviciosIds: [] };
 export default function AdminProfesionalesPage() {
@@ -47,7 +48,7 @@ export default function AdminProfesionalesPage() {
       <div className={styles.campos}>
         <label>Nombre completo<input required minLength={3} maxLength={120} placeholder="Nombre y apellido" value={nuevo.nombre} onChange={e => setNuevo({ ...nuevo, nombre: e.target.value })}/></label>
         <label>RUT<input required placeholder="12.345.678-5" value={nuevo.rut} onChange={e => setNuevo({ ...nuevo, rut: e.target.value })}/></label>
-        <label>Contraseña inicial<input required type="password" minLength={8} maxLength={128} autoComplete="new-password" placeholder="Mínimo 8 caracteres" value={nuevo.contrasena} onChange={e => setNuevo({ ...nuevo, contrasena: e.target.value })}/></label>
+        <label>Contraseña inicial<PasswordInput required minLength={8} maxLength={128} autoComplete="new-password" placeholder="Mínimo 8 caracteres" value={nuevo.contrasena} onChange={e => setNuevo({ ...nuevo, contrasena: e.target.value })}/></label>
         <label>Especialidad (opcional)<input maxLength={120} placeholder="Ej. Corte y coloración" value={nuevo.especialidad} onChange={e => setNuevo({ ...nuevo, especialidad: e.target.value })}/></label>
       </div>
       <h3>Servicios que puede atender</h3>
@@ -65,7 +66,7 @@ export default function AdminProfesionalesPage() {
         <div className={styles.campos}>
           <label>Nombre<input required minLength={3} value={cambio.nombre || ""} onChange={e => setCambio({ ...cambio, nombre: e.target.value })}/></label>
           <label>Especialidad<input value={cambio.especialidad || ""} onChange={e => setCambio({ ...cambio, especialidad: e.target.value })}/></label>
-          <label>Nueva contraseña (dejar vacío para mantener)<input type="password" minLength={8} maxLength={128} autoComplete="new-password" value={cambio.contrasena || ""} onChange={e => setCambio({ ...cambio, contrasena: e.target.value })}/></label>
+          <label>Nueva contraseña (dejar vacío para mantener)<PasswordInput minLength={8} maxLength={128} autoComplete="new-password" value={cambio.contrasena || ""} onChange={e => setCambio({ ...cambio, contrasena: e.target.value })}/></label>
         </div>
         <h4>Servicios asignados</h4><div className={styles.servicios}>{servicios.map(s => <label key={s._id}><input type="checkbox" checked={cambio.serviciosIds?.includes(s._id) || false} onChange={() => cambiarServicio(cambio, setCambio, s._id)}/>{s.nombre}</label>)}</div>
         <button type="submit" disabled={ocupado}>Guardar cambios</button>
