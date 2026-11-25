@@ -249,8 +249,12 @@
   }
 
   .siteLink {
-    display: none;
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 11px;
   }
+  .topActions { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .logoutButton { min-height: 36px; padding: 0 10px; font-size: 11px; }
 
   .content {
     padding: 56px 0 72px;
