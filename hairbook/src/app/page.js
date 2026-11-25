@@ -28,7 +28,8 @@ function usuarioEsAdmin(usuario) {
 }
 
 function usuarioEsProfesional(usuario) {
-  return Array.isArray(usuario?.roles) && usuario.roles.includes("profesional");
+  const roles = Array.isArray(usuario?.roles) ? usuario.roles : usuario?.rol ? [usuario.rol] : [];
+  return roles.includes("profesional");
 }
 
 function Logo({ compact = false }) {
@@ -52,6 +53,7 @@ function Spinner() {
 
 export default function Home() {
   const [pantalla, setPantalla] = useState("inicio");
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [modoAuth, setModoAuth] = useState("login");
   const [usuario, setUsuario] = useState(null);
   const [cargandoSesion, setCargandoSesion] = useState(true);
@@ -180,6 +182,7 @@ export default function Home() {
 
   const navegar = (destino) => {
     setPantalla(destino);
+    setMenuMovilAbierto(false);
     setMensajeAuth("");
     setMensajeReserva("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -257,6 +260,7 @@ export default function Home() {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
       setUsuario(null);
+      setMenuMovilAbierto(false);
       setReservas([]);
       setServicioSeleccionado(null);
       navegar("inicio");
@@ -339,13 +343,9 @@ export default function Home() {
           <nav className="desktop-nav" aria-label="Navegación principal">
             <button onClick={volverInicio}>Inicio</button>
             <button onClick={abrirServicios}>Servicios</button>
-            {usuarioEsAdmin(usuario) ? (
-              <button onClick={abrirAdmin}>Panel admin</button>
-            ) : usuarioEsProfesional(usuario) ? (
-              <button onClick={abrirProfesional}>Panel profesional</button>
-            ) : (
-              usuario && <button onClick={verReservas}>Mis reservas</button>
-            )}
+            {usuarioEsAdmin(usuario) && <button onClick={abrirAdmin}>Panel admin</button>}
+            {usuarioEsProfesional(usuario) && <button onClick={abrirProfesional}>Panel profesional</button>}
+            {usuario && <button onClick={verReservas}>Mis reservas</button>}
           </nav>
           <div className="nav-actions">
             {cargandoSesion ? (
@@ -354,7 +354,9 @@ export default function Home() {
               <>
                 <button
                   className="user-pill"
-                  onClick={usuarioEsAdmin(usuario) ? abrirAdmin : usuarioEsProfesional(usuario) ? abrirProfesional : verReservas}
+                  onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
+                  aria-label="Abrir o cerrar menú de usuario"
+                  aria-expanded={menuMovilAbierto}
                 >
                   <span className="avatar">{usuario.nombre?.charAt(0)?.toUpperCase() || "C"}</span>
                   <span>{usuario.nombre?.split(" ")[0]}</span>
@@ -368,6 +370,16 @@ export default function Home() {
             )}
           </div>
         </div>
+        {usuario && (
+          <nav className={`mobile-user-menu ${menuMovilAbierto ? "is-open" : ""}`} aria-label="Menú de usuario">
+            <button onClick={volverInicio}>Inicio</button>
+            <button onClick={abrirServicios}>Servicios</button>
+            {usuarioEsAdmin(usuario) && <button onClick={abrirAdmin}>Panel admin</button>}
+            {usuarioEsProfesional(usuario) && <button onClick={abrirProfesional}>Panel profesional</button>}
+            <button onClick={verReservas}>Mis reservas (cliente)</button>
+            <button className="mobile-menu-logout" onClick={cerrarSesion}>Cerrar sesión</button>
+          </nav>
+        )}
       </header>
 
       {pantalla === "inicio" && (
@@ -832,7 +844,7 @@ export default function Home() {
               </div>
             )}
 
-            <button className="link-button mobile-logout" onClick={cerrarSesion}>Cerrar sesión</button>
+
           </div>
         </section>
       )}

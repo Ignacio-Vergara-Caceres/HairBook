@@ -79,6 +79,9 @@ export default async function AdminPage() {
           </Link>
 
           <div className={styles.topActions}>
+            {usuario?.roles?.includes("profesional") && (
+              <Link href="/profesional" className={styles.siteLink}>Panel profesional</Link>
+            )}
             <Link href="/" className={styles.siteLink}>
               Ver sitio
             </Link>
